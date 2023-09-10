@@ -1,0 +1,131 @@
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{99BD01A9-873C-419F-93F0-621FE1BDB8AF}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <AssemblyName>ConsoleApplication</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>efrei_p2025_csharp</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".dockerignore" />
+    <None Include=".gitlab-ci.yml" />
+    <None Include=".git\config" />
+    <None Include=".git\description" />
+    <None Include=".git\FETCH_HEAD" />
+    <None Include=".git\HEAD" />
+    <None Include=".git\hooks\README.sample" />
+    <None Include=".git\index" />
+    <None Include=".git\info\exclude" />
+    <None Include=".git\logs\HEAD" />
+    <None Include=".git\logs\refs\heads\main" />
+    <None Include=".git\logs\refs\remotes\origin\main" />
+    <None Include=".git\logs\refs\remotes\origin\prod" />
+    <None Include=".git\logs\refs\remotes\origin\v1" />
+    <None Include=".git\objects\pack\pack-9d4812f997bb760af1127c8ebd06fa10be578c40.idx" />
+    <None Include=".git\objects\pack\pack-9d4812f997bb760af1127c8ebd06fa10be578c40.pack" />
+    <None Include=".git\refs\heads\main" />
+    <None Include=".git\refs\remotes\origin\HEAD" />
+    <None Include=".git\refs\remotes\origin\main" />
+    <None Include=".git\refs\remotes\origin\prod" />
+    <None Include=".git\refs\remotes\origin\v1" />
+    <None Include=".vs\efrei-p2025-csharp\DesignTimeBuild\.dtbcache.v2" />
+    <None Include=".vs\efrei-p2025-csharp\FileContentIndex\2b8b0f79-ebe7-47c3-b016-61e7859f0043.vsidx" />
+    <None Include=".vs\efrei-p2025-csharp\FileContentIndex\d30eae04-3d00-46c5-87af-2c1bd01830b9.vsidx" />
+    <None Include=".vs\efrei-p2025-csharp\v17\.futdcache.v2" />
+    <None Include=".vs\efrei-p2025-csharp\v17\.wsuo" />
+    <None Include=".vs\ProjectSettings.json" />
+    <None Include=".vs\slnx.sqlite" />
+    <None Include=".vs\VSWorkspaceState.json" />
+    <None Include="coverlet.runsettings" />
+    <None Include="extractTestResults.sh" />
+    <None Include="README.md" />
+    <None Include="Shard.Shared.Core\Shard.Shared.Core.csproj" />
+    <None Include="Shard.Shared.Web.IntegrationTests\obj\Debug\net7\Shard.Shared.Web.IntegrationTests.AssemblyInfoInputs.cache" />
+    <None Include="Shard.Shared.Web.IntegrationTests\obj\Debug\net7\Shard.Shared.Web.IntegrationTests.GeneratedMSBuildEditorConfig.editorconfig" />
+    <None Include="Shard.Shared.Web.IntegrationTests\obj\Release\net7\Shard.Shared.Web.IntegrationTests.AssemblyInfoInputs.cache" />
+    <None Include="Shard.Shared.Web.IntegrationTests\obj\Release\net7\Shard.Shared.Web.IntegrationTests.GeneratedMSBuildEditorConfig.editorconfig" />
+    <None Include="Shard.Shared.Web.IntegrationTests\Shard.Shared.Web.IntegrationTests.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include=".gitignore" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Shard.Shared.Core\Extensions.cs" />
+    <Compile Include="Shard.Shared.Core\MapGenerator.cs" />
+    <Compile Include="Shard.Shared.Core\MapGeneratorOptions.cs" />
+    <Compile Include="Shard.Shared.Core\PlanetSpecification.cs" />
+    <Compile Include="Shard.Shared.Core\SectorSpecification.cs" />
+    <Compile Include="Shard.Shared.Core\SystemSpecification.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\Asserts\BaseJTokenAsserter.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\Asserts\Extensions.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\Asserts\JArrayAsserter.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\Asserts\JObjectAsserter.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\Asserts\JTokenAsserter.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\BaseIntegrationTests.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\BaseIntegrationTests.SectorTests.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\Extensions.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\ExtraAssert.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\obj\Debug\net7\.NETCoreApp,Version=v7.0.AssemblyAttributes.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\obj\Debug\net7\Shard.Shared.Web.IntegrationTests.AssemblyInfo.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\obj\Debug\net7\Shard.Shared.Web.IntegrationTests.GlobalUsings.g.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\obj\Release\net7\.NETCoreApp,Version=v7.0.AssemblyAttributes.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\obj\Release\net7\Shard.Shared.Web.IntegrationTests.AssemblyInfo.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\obj\Release\net7\Shard.Shared.Web.IntegrationTests.GlobalUsings.g.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\TestEntities\Planet.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\TestEntities\Planets.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\TestEntities\StarSystem.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\TestEntities\StarSystems.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\Usings.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\XunitLogger.cs" />
+    <Compile Include="Shard.Shared.Web.IntegrationTests\XunitLoggerProvider.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include=".git\objects\info\" />
+    <Folder Include=".git\refs\tags\" />
+    <Folder Include="Shard.Shared.Web.IntegrationTests\bin\Debug\net7\" />
+    <Folder Include="Shard.Shared.Web.IntegrationTests\bin\Release\net7\" />
+    <Folder Include="Shard.Shared.Web.IntegrationTests\obj\Debug\net7\refint\" />
+    <Folder Include="Shard.Shared.Web.IntegrationTests\obj\Debug\net7\ref\" />
+    <Folder Include="Shard.Shared.Web.IntegrationTests\obj\Release\net7\refint\" />
+    <Folder Include="Shard.Shared.Web.IntegrationTests\obj\Release\net7\ref\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
+  <ProjectExtensions>
+    <VisualStudio AllowExistingFolder="true" />
+  </ProjectExtensions>
+</Project>
