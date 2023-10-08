@@ -1,86 +1,41 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Shard.Shared.Core;
+﻿using GalaxyQuest.Services;
+using GalaxyQuest.Utilities;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GalaxyQuest.Controllers
 {
     //[ApiController]
     public class GalaxyController : Controller
     {
+        private readonly MapRepository _mapRepository;
+        public GalaxyController(MapRepository mapRepository) => _mapRepository = mapRepository;
 
-        private SectorSpecification _sectorSpecification;
-
-        public GalaxyController()
-        {
-            MapGeneratorOptions generatorOptions = new MapGeneratorOptions();
-            generatorOptions.Seed = "Seed";     // Seed creation
-            MapGenerator mapGenerator = new MapGenerator(generatorOptions);
-            _sectorSpecification = (mapGenerator.Generate());    // Sector generation
-        }
-
-        // Get the systems
         [HttpGet("Systems")]
         public IActionResult GetSystems()
         {
-            return Ok(_sectorSpecification.Systems);
+            var systems = _mapRepository.GetAllSystemsWithoutResources();
+            return ResponseHelper.HandleResponse(systems);
         }
 
-        // Get the system and all it planets
         [HttpGet("Systems/{systemName}")]
         public IActionResult GetSystemName([FromRoute] string systemName)
         {
-            // Using foreach to find the 'systemName'
-            foreach (var name in _sectorSpecification.Systems)
-            {
-                if (name.Name == systemName)
-                {
-                    // If 'systemName' is find, return HTTP 200 (OK)
-                    return Ok(name);
-                }
-            }
-
-            // If 'systemName' isn't find, return HTTP 404 (Not Found)
-            return NotFound($"'{systemName}' not found ...");
+            var system = _mapRepository.GetSystem(systemName);
+            return ResponseHelper.HandleResponse(system, $"'{systemName}' not found ...");
         }
 
-        // Get all planets of a single system
         [HttpGet("Systems/{systemName}/planets")]
         public IActionResult GetAllPlanetsOneSystem([FromRoute] string systemName)
         {
-            // Using foreach to find the 'systemName'
-            foreach (var name in _sectorSpecification.Systems)
-            {
-                if (name.Name == systemName)
-                {
-                    // If 'systemName' is find, return HTTP 200 (OK)
-                    return Ok(name.Planets);
-                }
-            }
-
-            // If 'systemName' isn't find, return HTTP 404 (Not Found)
-            return NotFound($"'{systemName}' not found ...");
+            var system = _mapRepository.GetPlanets(systemName);
+            return ResponseHelper.HandleResponse(system.Planets, $"'{systemName}' not found ...");
         }
 
-        // Get a single planet of a system
         [HttpGet("Systems/{systemName}/planets/{planetName}")]
         public IActionResult GetSinglePlanet([FromRoute] string systemName, string planetName)
         {
-            // Using foreach to find the 'systemName'
-            foreach (var name in _sectorSpecification.Systems)
-            {
-                if (name.Name == systemName)
-                {
-                    // If 'systemName' is find
-                    foreach (var planet in name.Planets)
-                    {
-                        if (planet.Name == planetName) { return Ok(planet); }
-                    }
-                    // If 'planetName' isn't find, return HTTP 404 (Not Found)
-                    return NotFound($"'{planetName}' not found ...");
-                }
-            }
-
-            // If 'systemName' isn't find, return HTTP 404 (Not Found)
-            return NotFound($"'{systemName}' not found ...");
+            var planet = _mapRepository.GetOnePlanet(systemName, planetName);
+            return ResponseHelper.HandleResponse(planet, $"'{planetName}' not found ...");
         }
     }
 }
