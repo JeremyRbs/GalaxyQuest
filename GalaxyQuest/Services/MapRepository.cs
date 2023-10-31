@@ -14,5 +14,23 @@ namespace GalaxyQuest.Services
         public Entities.Planet? GetOnePlanet(string systemName, string planetName) => GetAllSystemsWithoutResources().FirstOrDefault(s => s.Name == systemName)?.Planets.FirstOrDefault(p => p.Name == planetName);
         public PlanetDTO? GetOnePlanetWithResources(string systemName, string planetName) => GetAllSystemsWithResources().FirstOrDefault(s => s.Name == systemName)?.Planets.FirstOrDefault(p => p.Name == planetName);
         public string GetRandomSystemName() => Systems[new Random().Next(0, Systems.Count)].Name;
+<<<<<<< HEAD
+=======
+
+        /*
+        public bool CanBuildMineOnPlanet(string systemName, string planetName)
+        {
+            var system = GetSystem(systemName);
+            if (system == null) { return false; }
+
+            var planet = GetOnePlanet(systemName, planetName);
+            if (planet == null) { return false; }
+
+            if (planet.HasMine) {  return false; }
+
+            return true;
+        }
+        */
+>>>>>>> 90999a61d78ffa28d5e8dfebe0c283f46b4cdf0a
     }
 }
