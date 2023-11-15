@@ -7,7 +7,7 @@ namespace GalaxyQuest.Services
     {
         public List<StarSystemDTO> Generate()
         {
-            SectorSpecification sectorSpecification = new MapGenerator(new MapGeneratorOptions { Seed = "Seed" }).Generate();
+            SectorSpecification sectorSpecification = new MapGenerator(new MapGeneratorOptions { Seed = "Test application" }).Generate();
             List<StarSystemDTO> res = sectorSpecification.Systems.Select(system =>
                 new StarSystemDTO(system.Name, system.Planets.Select(planet => new PlanetDTO(planet.Name,planet.Size, planet.ResourceQuantity.ToDictionary(
                     kvp => kvp.Key.ToString().ToLower(),

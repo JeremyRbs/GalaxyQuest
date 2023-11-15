@@ -1,4 +1,6 @@
-﻿namespace GalaxyQuest.Entities
+﻿using Shard.Shared.Core;
+
+namespace GalaxyQuest.Entities
 {
     public class User
     {

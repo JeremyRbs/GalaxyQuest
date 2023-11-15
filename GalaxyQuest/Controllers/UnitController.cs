@@ -48,7 +48,7 @@ namespace GalaxyQuest.Controllers
             if (newUnit != null)
             {
                 newUnit.MoveUnit(unit.DestinationSystem, unit.DestinationPlanet);
-                newUnit.TaskUnit = MoveAsync(unit, newUnit);
+                newUnit.TaskUnit = newUnit.MoveAsync(unit, newUnit, _clock);
                 return Ok(newUnit);
             }
             return NotFound();
@@ -72,42 +72,5 @@ namespace GalaxyQuest.Controllers
             }
             return NotFound();
         }
-
-        public async Task MoveAsync(Unit unitBody, Unit? unit)
-        {
-            unit.DestinationPlanet = unitBody.DestinationPlanet;
-            unit.DestinationSystem = unitBody.DestinationSystem;
-
-            if (unitBody.DestinationSystem == unitBody.System)
-            {
-                if (unitBody.DestinationPlanet != null)
-                {
-                    unit.EstimatedTimeOfArrival = _clock.Now.AddSeconds(15);
-                    await _clock.Delay(15000);
-                }
-                else
-                {
-                    unit.EstimatedTimeOfArrival = _clock.Now;
-                }
-
-                unit.Planet = unitBody.DestinationPlanet;
-            }
-            else if (unitBody.DestinationSystem != unit.System)
-            {
-                unit.EstimatedTimeOfArrival = _clock.Now.AddSeconds(60);
-                await _clock.Delay(60000);
-
-                unit.System = unitBody.DestinationSystem;
-
-                if (unitBody.DestinationPlanet != null)
-                {
-                    unit.EstimatedTimeOfArrival = _clock.Now.AddSeconds(15);
-                    await _clock.Delay(15000);
-                }
-
-                unit.Planet = unitBody.DestinationPlanet;
-            }
-        }
-
     }
 }
