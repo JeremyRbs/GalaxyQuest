@@ -53,9 +53,9 @@ namespace GalaxyQuest.Controllers
             if (buildingRequest.Type == "mine")
             {
                 // Validate the resource category.
-                if (buildingRequest.ResourceCategory != "liquid" ||
-                    buildingRequest.ResourceCategory != "gaseous" ||
-                    buildingRequest.ResourceCategory != "solid")
+                if (buildingRequest.ResourceCategory == "liquid" ||
+                    buildingRequest.ResourceCategory == "gaseous" ||
+                    buildingRequest.ResourceCategory == "solid")
                 {
                     // Create a new building of "mine" type and add it to the user's list of buildings.
                     MineBuilding mine = new(
@@ -73,13 +73,10 @@ namespace GalaxyQuest.Controllers
                     return buildingRequest.BuilderId == null || buildingRequest.BuilderId != unit.Id
                         ? BadRequest("Invalid builder ID format or mismatch.")
                         : Ok(mine);
-                }
-                else
-                {
+                } else {
                     return BadRequest("Invalid resource category.");
                 }
-            }
-            else if (buildingRequest.Type == "starport") {
+            } else if (buildingRequest.Type == "starport") {
                 // Create a new building of "mine" type and add it to the user's list of buildings.
                 StarportBuilding starportBuilding = new(
                     unit.Id,
@@ -99,7 +96,6 @@ namespace GalaxyQuest.Controllers
             } else {
                 return BadRequest("Invalid building request.");
             }
-            userDTO.AddUnit(unit);
         }
 
         /// <summary>

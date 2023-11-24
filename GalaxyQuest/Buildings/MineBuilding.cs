@@ -29,7 +29,7 @@ namespace GalaxyQuest.Buildings
         /// </summary>
         /// <param name="_clock">The clock interface.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public override async Task ExtractResources(IClock _clock)
+        public async Task ExtractResources(IClock _clock)
         {
             var (unit, userDTO, planetDTO) = GetUnitUserAndPlanet();
             int quantityToExtract = 1;

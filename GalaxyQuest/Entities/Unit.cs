@@ -46,8 +46,6 @@ namespace GalaxyQuest.Entities
         /// </summary>
         public DateTime? EstimatedTimeOfArrival { get; set; }
 
-        public int Health { get; set; }
-
         /// <summary>
         /// Gets or sets the user ID associated with the unit.
         /// </summary>
@@ -63,6 +61,8 @@ namespace GalaxyQuest.Entities
         /// </summary>
         public Task? TaskUnit { get; set; }
 
+        public int Health { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Unit"/> class.
         /// </summary>
@@ -71,8 +71,8 @@ namespace GalaxyQuest.Entities
         /// <param name="planet">The current planet of the unit.</param>
         /// <param name="userId">The user ID associated with the unit.</param>
         public Unit(string type, string system, string planet, string userId) =>
-            (Id, Type, System, Planet, DestinationSystem, DestinationPlanet, EstimatedTimeOfArrival, TaskUnit, UserId, IsMoving) =
-            (Guid.NewGuid().ToString(), type, system, planet, null, null, null, null, userId, false);
+            (Id, Type, System, Planet, DestinationSystem, DestinationPlanet, EstimatedTimeOfArrival, UserId, IsMoving, Health) =
+            (Guid.NewGuid().ToString(), type, system, planet, null, null, null, userId, false, 0);
 
         /// <summary>
         /// Moves the unit to the specified system and planet.
