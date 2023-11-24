@@ -12,9 +12,7 @@ stages:
   - archive
 
 variables:
-<<<<<<< HEAD
   VERSION: '3'
->>>>>>> 90999a61d78ffa28d5e8dfebe0c283f46b4cdf0a
 
 compile:
   stage: compile
