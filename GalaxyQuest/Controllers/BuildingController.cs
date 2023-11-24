@@ -105,18 +105,27 @@ namespace GalaxyQuest.Controllers
                 TimeSpan timeRemaining = (TimeSpan)(building.EstimatedBuildTime - _clock.Now);
                 if (!building.IsBuilt && timeRemaining <= TimeSpan.FromSeconds(2))
                 {
-                    await building.TaskBuilding;
-
-                    // If the building is no longer in the user's list, it means it was canceled during construction.
-                    if (!userDTO.Buildings.Contains(building))
+                    try
                     {
-                        return NotFound("Building construction canceled.");
+                        if (building.TaskBuilding != null)
+                        {
+                            await building.TaskBuilding;
+                        }
+                    }catch (TaskCanceledException) {
+                        return NotFound(buildingId);
                     }
+
                 }
             }
 
+            // If the building is no longer in the user's list, it means it was canceled during construction.
+            if (userDTO?.Buildings.FirstOrDefault(u => u.Id == buildingId) == null)
+            {
+                return NotFound("Building construction canceled.");
+            }
+
             // Return the building or an error response.
-            return ResponseHelper.HandleResponse(building);
+            return ResponseHelper.HandleResponse(building, notFoundMessage: "Not found");
         }
     }
 }

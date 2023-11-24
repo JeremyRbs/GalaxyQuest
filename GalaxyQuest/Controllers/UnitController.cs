@@ -64,21 +64,22 @@ namespace GalaxyQuest.Controllers
 
             if (newUnit != null)
             {
-                if (newUnit.Type == "builder" && newUnit.Planet != unit.DestinationPlanet)
-                {
-                    Building buildingOnConstruction = userDTO.Buildings.FirstOrDefault(b => b.IsBuilt == false && b.BuilderId == newUnit.Id);
-                    if (buildingOnConstruction != null)
+
+                if (newUnit.Type == "builder" && (newUnit.Planet != unit.DestinationPlanet || newUnit.System != unit.DestinationSystem))
                     {
-                        buildingOnConstruction.CancelBuildingProcess();
+                        Building buildingOnConstruction = userDTO.Buildings.FirstOrDefault(b => b.IsBuilt == false && b.BuilderId == newUnit.Id);
+                        if (buildingOnConstruction != null)
+                        {
                         userDTO.Buildings.Remove(buildingOnConstruction);
+                        buildingOnConstruction.CancelBuildingProcess();
+                        }
                     }
-                }
 
                 newUnit.MoveUnit(unit.DestinationSystem, unit.DestinationPlanet);
                 newUnit.TaskUnit = newUnit.MoveAsync(unit, newUnit, _clock);
 
-                return ResponseHelper.HandleResponse(newUnit);
-            }
+                    return ResponseHelper.HandleResponse(newUnit);
+                }
 
             return ResponseHelper.HandleResponse<Unit>(null, notFoundMessage: "Unit not found");
         }
