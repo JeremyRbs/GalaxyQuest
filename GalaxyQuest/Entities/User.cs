@@ -20,7 +20,7 @@ namespace GalaxyQuest.Entities
         /// <summary>
         /// Gets or sets the date of creation of the user.
         /// </summary>
-        public DateTimeOffset? DateOfCreation { get; set; }
+        public DateTimeOffset? DateOfCreation { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="User"/> class.

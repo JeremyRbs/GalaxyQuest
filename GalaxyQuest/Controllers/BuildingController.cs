@@ -42,39 +42,64 @@ namespace GalaxyQuest.Controllers
                 return BadRequest("Invalid builder unit or missing destination.");
             }
 
-            // Validate the building request.
             if (buildingRequest == null ||
                 buildingRequest.BuilderId == null ||
-                buildingRequest.BuilderId != unit.Id ||
-                buildingRequest.Type != "mine")
+                buildingRequest.BuilderId != unit.Id)
             {
                 return BadRequest("Invalid building request.");
             }
 
-            // Validate the resource category.
-            if (buildingRequest.ResourceCategory != "liquid" &&
-                buildingRequest.ResourceCategory != "gaseous" &&
-                buildingRequest.ResourceCategory != "solid")
+            // Validate the building request.
+            if (buildingRequest.Type == "mine")
             {
-                return BadRequest("Invalid resource category.");
+                // Validate the resource category.
+                if (buildingRequest.ResourceCategory != "liquid" ||
+                    buildingRequest.ResourceCategory != "gaseous" ||
+                    buildingRequest.ResourceCategory != "solid")
+                {
+                    // Create a new building of "mine" type and add it to the user's list of buildings.
+                    MineBuilding mine = new(
+                        unit.Id,
+                        buildingRequest.ResourceCategory,
+                        unit.System,
+                        unit.Planet,
+                        _clock,
+                        _userRepository,
+                        _mapRepository
+                    );
+                    userDTO.Buildings.Add(mine);
+
+                    // Return the building or an error response.
+                    return buildingRequest.BuilderId == null || buildingRequest.BuilderId != unit.Id
+                        ? BadRequest("Invalid builder ID format or mismatch.")
+                        : Ok(mine);
+                }
+                else
+                {
+                    return BadRequest("Invalid resource category.");
+                }
             }
+            else if (buildingRequest.Type == "starport") {
+                // Create a new building of "mine" type and add it to the user's list of buildings.
+                StarportBuilding starportBuilding = new(
+                    unit.Id,
+                    buildingRequest.ResourceCategory,
+                    unit.System,
+                    unit.Planet,
+                    _clock,
+                    _userRepository,
+                    _mapRepository
+                );
+                userDTO.Buildings.Add(starportBuilding);
 
-            // Create a new building of "mine" type and add it to the user's list of buildings.
-            MineBuilding mine = new(
-                unit.Id,
-                buildingRequest.ResourceCategory,
-                unit.System,
-                unit.Planet,
-                _clock,
-                _userRepository,
-                _mapRepository
-            );
-            userDTO.Buildings.Add(mine);
-
-            // Return the building or an error response.
-            return buildingRequest.BuilderId == null || buildingRequest.BuilderId != unit.Id
-                ? BadRequest("Invalid builder ID format or mismatch.")
-                : Ok(mine);
+                // Return the building or an error response.
+                return buildingRequest.BuilderId == null || buildingRequest.BuilderId != unit.Id
+                    ? BadRequest("Invalid builder ID format or mismatch.")
+                    : Ok(starportBuilding);
+            } else {
+                return BadRequest("Invalid building request.");
+            }
+            userDTO.AddUnit(unit);
         }
 
         /// <summary>
@@ -118,5 +143,16 @@ namespace GalaxyQuest.Controllers
             // Return the building or an error response.
             return ResponseHelper.HandleResponse(building);
         }
+
+        /// <summary>
+        /// Add a unit to the build queue of the starport. Currently immediatly returns the unit.
+        /// </summary>
+
+        /*
+        [HttpPost("users/{userId}/Buildings/{starportId}/queue")]
+        public async Task<IActionResult> AddUnitBuildQueueStarport([FromRoute] string userId, string starportId)
+        {
+        }
+        */
     }
 }

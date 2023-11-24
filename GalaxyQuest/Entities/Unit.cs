@@ -46,6 +46,8 @@ namespace GalaxyQuest.Entities
         /// </summary>
         public DateTime? EstimatedTimeOfArrival { get; set; }
 
+        public int Health { get; set; }
+
         /// <summary>
         /// Gets or sets the user ID associated with the unit.
         /// </summary>

@@ -57,7 +57,7 @@ namespace GalaxyQuest.Controllers
         /// Updates the status of a specific unit for a user.
         /// </summary>
         [HttpPut("users/{userId}/Units/{unitId}")]
-        public IActionResult ChangeUnitStatus(string userId, string unitId, [FromBody] Unit unit)
+        public IActionResult ChangeUnitStatus([FromRoute] string userId, string unitId, [FromBody] Unit unit)
         {
             UserDTO? userDTO = _userRepository.Users.FirstOrDefault(s => s.Id == userId);
             Unit? newUnit = userDTO?.Units.FirstOrDefault(u => u.Id == unitId);
