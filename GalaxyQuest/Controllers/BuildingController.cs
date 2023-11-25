@@ -106,15 +106,15 @@ namespace GalaxyQuest.Controllers
                 if (!building.IsBuilt && timeRemaining <= TimeSpan.FromSeconds(2))
                 {
                     await building.TaskBuilding;
-
-                    // If the building is no longer in the user's list, it means it was canceled during construction.
-                    if (!userDTO.Buildings.Contains(building))
-                    {
-                        return NotFound("Building construction canceled.");
-                    }
                 }
             }
 
+            // If the building is no longer in the user's list, it means it was canceled during construction.
+            if (!userDTO.Buildings.Contains(building))
+            {
+                return NotFound("Building construction canceled.");
+            }
+            
             // Return the building or an error response.
             return ResponseHelper.HandleResponse(building);
         }
