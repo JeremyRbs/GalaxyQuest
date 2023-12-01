@@ -69,8 +69,8 @@ namespace GalaxyQuest.Controllers
                     Building buildingOnConstruction = userDTO.Buildings.FirstOrDefault(b => b.IsBuilt == false && b.BuilderId == newUnit.Id);
                     if (buildingOnConstruction != null)
                     {
-                        buildingOnConstruction.CancelBuildingProcess();
                         userDTO.Buildings.Remove(buildingOnConstruction);
+                        buildingOnConstruction.CancelBuildingProcess();
                     }
                 }
 
