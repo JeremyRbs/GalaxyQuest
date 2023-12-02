@@ -3,6 +3,7 @@ using GalaxyQuest.Services;
 using Shard.Shared.Core;
 using System;
 using System.Threading.Tasks;
+using GalaxyQuest.RequestBodies;
 
 namespace GalaxyQuest.Entities
 {
@@ -86,7 +87,7 @@ namespace GalaxyQuest.Entities
         /// <param name="unitBody">The unit body containing destination information.</param>
         /// <param name="unit">The unit to be moved.</param>
         /// <param name="_clock">The clock instance for handling delays.</param>
-        public async Task MoveAsync(Unit unitBody, Unit? unit, IClock _clock)
+        public async Task MoveAsync(PostRequestUnitBody unitBody, Unit? unit, IClock _clock)
         {
             unit.DestinationPlanet = unitBody.DestinationPlanet;
             unit.DestinationSystem = unitBody.DestinationSystem;

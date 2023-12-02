@@ -43,38 +43,66 @@ namespace GalaxyQuest.Controllers
             }
 
             // Validate the building request.
-            if (buildingRequest == null ||
-                buildingRequest.BuilderId == null ||
-                buildingRequest.BuilderId != unit.Id ||
-                buildingRequest.Type != "mine")
+            if (buildingRequest != null &&
+                buildingRequest.BuilderId != null &&
+                buildingRequest.BuilderId == unit.Id)
             {
+                if (buildingRequest.Type == "mine")
+                {
+
+                    // Validate the resource category.
+                    if (buildingRequest.ResourceCategory != "liquid" &&
+                        buildingRequest.ResourceCategory != "gaseous" &&
+                        buildingRequest.ResourceCategory != "solid")
+                    {
+                        return BadRequest("Invalid resource category.");
+                    }
+
+                    // Create a new building of "mine" type and add it to the user's list of buildings.
+                    MineBuilding mine = new(
+                        unit.Id,
+                        buildingRequest.ResourceCategory,
+                        unit.System,
+                        unit.Planet,
+                        _clock,
+                        _userRepository,
+                        _mapRepository
+                    );
+                    
+                    userDTO.Buildings.Add(mine);
+                    
+                    BuildingDTO mineDto = new BuildingDTO(mine.Id, mine.Type, mine.BuilderId, mine.ResourceCategory, mine.System, mine.Planet, mine.IsBuilt, mine.EstimatedBuildTime);
+
+                    // Return the building or an error response.
+                    return buildingRequest.BuilderId == null || buildingRequest.BuilderId != unit.Id
+                        ? BadRequest("Invalid builder ID format or mismatch.")
+                        : Ok(mineDto);
+                }
+                else if (buildingRequest.Type == "starport")
+                {
+                    // Create a new building of "mine" type and add it to the user's list of buildings.
+                    StarportBuilding starport = new(
+                        unit.Id,
+                        buildingRequest.ResourceCategory,
+                        unit.System,
+                        unit.Planet,
+                        _clock,
+                        _userRepository,
+                        _mapRepository
+                    );
+                    
+                    userDTO.Buildings.Add(starport);
+
+                    BuildingDTO buildingDto = new BuildingDTO(starport.Id, starport.Type, starport.BuilderId, starport.ResourceCategory, starport.System, starport.Planet, starport.IsBuilt, starport.EstimatedBuildTime);
+                    
+                    // Return the building or an error response.
+                    return buildingRequest.BuilderId == null || buildingRequest.BuilderId != unit.Id
+                        ? BadRequest("Invalid builder ID format or mismatch.")
+                        : Ok(buildingDto);
+                }
                 return BadRequest("Invalid building request.");
             }
-
-            // Validate the resource category.
-            if (buildingRequest.ResourceCategory != "liquid" &&
-                buildingRequest.ResourceCategory != "gaseous" &&
-                buildingRequest.ResourceCategory != "solid")
-            {
-                return BadRequest("Invalid resource category.");
-            }
-
-            // Create a new building of "mine" type and add it to the user's list of buildings.
-            MineBuilding mine = new(
-                unit.Id,
-                buildingRequest.ResourceCategory,
-                unit.System,
-                unit.Planet,
-                _clock,
-                _userRepository,
-                _mapRepository
-            );
-            userDTO.Buildings.Add(mine);
-
-            // Return the building or an error response.
-            return buildingRequest.BuilderId == null || buildingRequest.BuilderId != unit.Id
-                ? BadRequest("Invalid builder ID format or mismatch.")
-                : Ok(mine);
+            return BadRequest("Invalid building request.");
         }
 
         /// <summary>
@@ -84,7 +112,7 @@ namespace GalaxyQuest.Controllers
         public IActionResult GetBuildings([FromRoute] string userId)
         {
             UserDTO? userDTO = _userRepository.Users.FirstOrDefault(u => u.Id == userId);
-            return ResponseHelper.HandleResponse(userDTO?.Buildings, $"User with ID '{userId}' not found ...");
+            return ResponseHelper.HandleResponse(userDTO?.Buildings.Select(b => new BuildingDTO(b.Id, b.Type, b.BuilderId,  b.ResourceCategory, b.System, b.Planet, b.IsBuilt, b.EstimatedBuildTime)).ToList(), $"User with ID '{userId}' not found ...");
         }
 
         /// <summary>
@@ -114,9 +142,32 @@ namespace GalaxyQuest.Controllers
             {
                 return NotFound("Building construction canceled.");
             }
+
+            BuildingDTO buildingDto = new BuildingDTO(building.Id, building.Type, building.BuilderId, building.ResourceCategory, building.System, building.Planet, building.IsBuilt, building.EstimatedBuildTime);
             
             // Return the building or an error response.
-            return ResponseHelper.HandleResponse(building);
+            return ResponseHelper.HandleResponse(buildingDto);
+        }
+        
+        [HttpPost("users/{userId}/Buildings/{starportId}/queue")]
+        public async Task<IActionResult> QueueBuilding([FromRoute] string userId, [FromRoute] string starportId)
+        {
+            // Récupérez l'utilisateur.
+            UserDTO? userDTO = _userRepository.Users.FirstOrDefault(u => u.Id == userId);
+            if (userDTO == null) return NotFound("User not found.");
+
+            // Récupérez le bâtiment spécifique (StarportBuilding) en fonction de starportId.
+            StarportBuilding starport = userDTO?.Buildings.OfType<StarportBuilding>().FirstOrDefault(b => b.Id == starportId);
+            if (starport == null) return NotFound("Starport not found.");
+
+            // Exécutez la logique pour ajouter un élément à la file d'attente du bâtiment.
+            // Vous devrez peut-être ajuster ceci en fonction de la logique spécifique de votre application.
+
+            // Ajoutez la logique de mise en file d'attente ici.
+            // Exemple: starport.QueueBuilding();
+
+            // Retournez une réponse appropriée.
+            return Ok("Building queued successfully.");
         }
     }
 }

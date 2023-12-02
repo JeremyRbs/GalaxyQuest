@@ -1,5 +1,4 @@
-﻿using GalaxyQuest.Controllers;
-using GalaxyQuest.EntitiesDTO;
+﻿using GalaxyQuest.EntitiesDTO;
 using GalaxyQuest.Services;
 using Shard.Shared.Core;
 
@@ -58,7 +57,7 @@ namespace GalaxyQuest.Entities
         /// <summary>
         /// Gets or sets the task representing the building process.
         /// </summary>
-        public Task? TaskBuilding { get; set; }
+        public Task TaskBuilding { get; }
 
         /// <summary>
         /// Gets or sets the user repository.

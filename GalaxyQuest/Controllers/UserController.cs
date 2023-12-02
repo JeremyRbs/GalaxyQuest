@@ -5,6 +5,7 @@ using GalaxyQuest.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
 using GalaxyQuest.Units;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GalaxyQuest.Controllers
 {
@@ -26,26 +27,40 @@ namespace GalaxyQuest.Controllers
         [HttpPut("{id}")]
         public IActionResult CreateUser(string id, [FromBody] User user)
         {
+
+            UserDTO userDto = _userRepository.Users.FirstOrDefault(x => x.Id == id);
+
+            if (userDto != null)
+            {
+                if (HttpContext.Request.Headers["Authorization"].ToString().StartsWith("Basic"))
+                {
+
+                }
+                return userDto.Id != id || !Regex.IsMatch(id, "^[a-zA-Z0-9_-]+$")
+                    ? BadRequest("Invalid user ID format or mismatch.")
+                    : ResponseHelper.HandleResponse(userDto);
+            }
+            
             // Generate random units for the user
             var random = new Random(43);
             var randomSystemForUnits = _mapRepository.Systems[random.Next(_mapRepository.Systems.Count)];
             var randomPlanetForUnits = randomSystemForUnits.Planets[random.Next(randomSystemForUnits.Planets.Count)];
-
+            
             ScoutUnit scout = new(randomSystemForUnits.Name, randomPlanetForUnits.Name, user.Id);
             BuilderUnit builder = new(randomSystemForUnits.Name, randomPlanetForUnits.Name, user.Id);
 
             // Create and add a new user DTO with generated units
-            var newUserDTO = new UserDTO(user.Id, user.Pseudo)
+            var userDTO = new UserDTO(user.Id, user.Pseudo)
             {
                 Units = { scout, builder }
             };
-            newUserDTO.AddUnit(scout);
-            newUserDTO.AddUnit(builder);
-            _userRepository.Users.Add(newUserDTO);
+            userDTO.AddUnit(scout);
+            userDTO.AddUnit(builder);
+            _userRepository.Users.Add(userDTO);
 
-            return newUserDTO.Id != id || !Regex.IsMatch(id, "^[a-zA-Z0-9_-]+$")
+            return userDTO.Id != id || !Regex.IsMatch(id, "^[a-zA-Z0-9_-]+$")
                 ? BadRequest("Invalid user ID format or mismatch.")
-                : ResponseHelper.HandleResponse(newUserDTO);
+                : ResponseHelper.HandleResponse(userDTO);
         }
 
         /// <summary>
