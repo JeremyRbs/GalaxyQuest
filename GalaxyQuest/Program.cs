@@ -1,4 +1,5 @@
 using GalaxyQuest.Services;
+using Shard.Shared.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<MapFactory>();
 builder.Services.AddSingleton<MapRepository>();
 builder.Services.AddSingleton<UserRepository>();
+builder.Services.AddSingleton<IClock>(new SystemClock());
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
