@@ -1,11 +1,11 @@
-﻿using GalaxyQuest.EntitiesDTO;
+﻿﻿using GalaxyQuest.EntitiesDTO;
 using GalaxyQuest.Services;
 using Shard.Shared.Core;
 using System;
 using System.Threading.Tasks;
-using GalaxyQuest.RequestBodies;
+ using GalaxyQuest.RequestBodies;
 
-namespace GalaxyQuest.Entities
+ namespace GalaxyQuest.Entities
 {
     /// <summary>
     /// Represents a unit entity.
@@ -72,6 +72,10 @@ namespace GalaxyQuest.Entities
         public Unit(string type, string system, string planet, string userId) =>
             (Id, Type, System, Planet, DestinationSystem, DestinationPlanet, EstimatedTimeOfArrival, TaskUnit, UserId, IsMoving) =
             (Guid.NewGuid().ToString(), type, system, planet, null, null, null, null, userId, false);
+        
+        public Unit(string id, string type, string system, string planet, string destinationSystem, string destinationPlanet, string userId) =>
+            (Id, Type, System, Planet, DestinationSystem, DestinationPlanet, EstimatedTimeOfArrival, TaskUnit, UserId, IsMoving) =
+            (id, type, system, planet, destinationSystem, destinationPlanet, null, null, userId, false);
 
         /// <summary>
         /// Moves the unit to the specified system and planet.

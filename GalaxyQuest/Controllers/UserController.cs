@@ -4,6 +4,7 @@ using GalaxyQuest.Utilities;
 using GalaxyQuest.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
+using GalaxyQuest.RequestBodies;
 using GalaxyQuest.Units;
 using Microsoft.AspNetCore.Authorization;
 
@@ -25,35 +26,40 @@ namespace GalaxyQuest.Controllers
         /// Creates a new user with random units and adds it to the repository.
         /// </summary>
         [HttpPut("{id}")]
-        public IActionResult CreateUser(string id, [FromBody] User user)
+        public IActionResult CreateUser(string id, [FromBody] PostRequestUserBody user)
         {
-
-            UserDTO userDto = _userRepository.Users.FirstOrDefault(x => x.Id == id);
-
-            if (userDto != null)
-            {
-                if (HttpContext.Request.Headers["Authorization"].ToString().StartsWith("Basic"))
-                {
-
-                }
-                return userDto.Id != id || !Regex.IsMatch(id, "^[a-zA-Z0-9_-]+$")
-                    ? BadRequest("Invalid user ID format or mismatch.")
-                    : ResponseHelper.HandleResponse(userDto);
-            }
             
             // Generate random units for the user
             var random = new Random(43);
             var randomSystemForUnits = _mapRepository.Systems[random.Next(_mapRepository.Systems.Count)];
-            var randomPlanetForUnits = randomSystemForUnits.Planets[random.Next(randomSystemForUnits.Planets.Count)];
+            var randomPlanetForUnits =
+                randomSystemForUnits.Planets[random.Next(randomSystemForUnits.Planets.Count)];
+
+            Unit scout = new("scout", randomSystemForUnits.Name, randomPlanetForUnits.Name, user.Id);
+            Unit builder = new("builder", randomSystemForUnits.Name, randomPlanetForUnits.Name, user.Id);
+
+            UserDTO userDto = _userRepository.Users.FirstOrDefault(x => x.Id == id);
             
-            ScoutUnit scout = new(randomSystemForUnits.Name, randomPlanetForUnits.Name, user.Id);
-            BuilderUnit builder = new(randomSystemForUnits.Name, randomPlanetForUnits.Name, user.Id);
+            if (userDto != null)
+            {
+                if (User.Identity.IsAuthenticated)
+                {
+                    userDto.Pseudo = user.Pseudo;
+                    userDto.DateOfCreation = user.DateOfCreation;
+                    userDto.ResourcesQuantity = user.ResourcesQuantity;
+                }
+                
+                return userDto.Id != id || !Regex.IsMatch(id, "^[a-zA-Z0-9_-]+$")
+                    ? BadRequest("Invalid user ID format or mismatch.")
+                    : ResponseHelper.HandleResponse(userDto);
+            }
 
             // Create and add a new user DTO with generated units
             var userDTO = new UserDTO(user.Id, user.Pseudo)
             {
                 Units = { scout, builder }
             };
+            
             userDTO.AddUnit(scout);
             userDTO.AddUnit(builder);
             _userRepository.Users.Add(userDTO);

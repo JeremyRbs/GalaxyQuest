@@ -1,8 +1,10 @@
-﻿using GalaxyQuest.Entities;
+﻿using System.Collections.Immutable;
+using GalaxyQuest.Entities;
 using GalaxyQuest.EntitiesDTO;
 using GalaxyQuest.Buildings;
 using GalaxyQuest.RequestBodies;
 using GalaxyQuest.Services;
+using GalaxyQuest.Units;
 using GalaxyQuest.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Shard.Shared.Core;
@@ -148,26 +150,64 @@ namespace GalaxyQuest.Controllers
             // Return the building or an error response.
             return ResponseHelper.HandleResponse(buildingDto);
         }
-        
+
         [HttpPost("users/{userId}/Buildings/{starportId}/queue")]
-        public async Task<IActionResult> QueueBuilding([FromRoute] string userId, [FromRoute] string starportId)
+        public async Task<IActionResult> QueueBuilding([FromRoute] string userId, string starportId, [FromBody] PostRequestUnitBody postRequestUnitBody)
         {
-            // Récupérez l'utilisateur.
-            UserDTO? userDTO = _userRepository.Users.FirstOrDefault(u => u.Id == userId);
-            if (userDTO == null) return NotFound("User not found.");
+            UserDTO? userDto = _userRepository.Users.FirstOrDefault(u => u.Id == userId);
+            if (userDto == null) return NotFound("User not found.");
 
-            // Récupérez le bâtiment spécifique (StarportBuilding) en fonction de starportId.
-            StarportBuilding starport = userDTO?.Buildings.OfType<StarportBuilding>().FirstOrDefault(b => b.Id == starportId);
-            if (starport == null) return NotFound("Starport not found.");
+            Building building = userDto?.Buildings.FirstOrDefault(u => u.Id == starportId);
+            if (building == null) {return NotFound("Building not found.");}
+            if (building.Type != "starport") return BadRequest("Building isn't a starport");
+            StarportBuilding starport = (StarportBuilding)(building);
+            if (starport.IsBuilt == false) return BadRequest("Starport is not build yet");
 
-            // Exécutez la logique pour ajouter un élément à la file d'attente du bâtiment.
-            // Vous devrez peut-être ajuster ceci en fonction de la logique spécifique de votre application.
-
-            // Ajoutez la logique de mise en file d'attente ici.
-            // Exemple: starport.QueueBuilding();
-
-            // Retournez une réponse appropriée.
-            return Ok("Building queued successfully.");
+            switch (postRequestUnitBody.Type)
+            {
+                case "scout":
+                    if (userDto.BuildResources(postRequestUnitBody.Type))
+                    {
+                        ScoutUnit scout = new (starport.System, starport.Planet, userDto.Id);
+                        starport.AddUnitToQueue(scout);
+                        return Ok(scout);
+                    }
+                    return BadRequest("Not enough resources to build");
+                case "builder":
+                    if (userDto.BuildResources(postRequestUnitBody.Type))
+                    {
+                        BuilderUnit builder = new (starport.System, starport.Planet, userDto.Id);
+                        starport.AddUnitToQueue(builder);
+                        return Ok(builder);
+                    }
+                    return BadRequest("Not enough resources to build");
+                case "fighter":
+                    if (userDto.BuildResources(postRequestUnitBody.Type))
+                    {
+                        FighterUnit fighter = new (starport.System, starport.Planet, userDto.Id);
+                        starport.AddUnitToQueue(fighter);
+                        return Ok(fighter);
+                    }
+                    return BadRequest("Not enough resources to build");
+                case "bomber":
+                    if (userDto.BuildResources(postRequestUnitBody.Type))
+                    {
+                        BomberUnit bomber = new (starport.System, starport.Planet, userDto.Id);
+                        starport.AddUnitToQueue(bomber);
+                        return Ok(bomber);
+                    }
+                    return BadRequest("Not enough resources to build");
+                case "cruiser":
+                    if (userDto.BuildResources(postRequestUnitBody.Type))
+                    {
+                        CruiserUnit cruiser = new (starport.System, starport.Planet, userDto.Id);
+                        starport.AddUnitToQueue(cruiser);
+                        return Ok(cruiser);
+                    }
+                    return BadRequest("Not enough resources to build");
+                default: 
+                    return BadRequest("Unit type didn't exist");
+            }
         }
     }
 }

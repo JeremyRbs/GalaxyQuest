@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Shard.Shared.Core;
 using System.Threading.Tasks;
 using GalaxyQuest.RequestBodies;
+using GalaxyQuest.Units;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GalaxyQuest.Controllers
 {
@@ -58,16 +60,17 @@ namespace GalaxyQuest.Controllers
         /// Updates the status of a specific unit for a user.
         /// </summary>
         [HttpPut("users/{userId}/Units/{unitId}")]
-        public IActionResult ChangeUnitStatus(string userId, string unitId, [FromBody] PostRequestUnitBody unit)
+        public IActionResult ChangeUnitStatus(string userId, string unitId, [FromBody] PostRequestUnitBody postRequestUnitBody)
         {
             UserDTO? userDTO = _userRepository.Users.FirstOrDefault(s => s.Id == userId);
-            Unit? newUnit = userDTO?.Units.FirstOrDefault(u => u.Id == unitId);
+            Unit? unit = userDTO?.Units.FirstOrDefault(u => u.Id == unitId);
 
-            if (newUnit != null)
+            if (unit != null)
             {
-                if (newUnit.Type == "builder" && newUnit.Planet != unit.DestinationPlanet)
+                if (unit.Type == "builder" && unit.Planet != postRequestUnitBody.DestinationPlanet)
                 {
-                    Building buildingOnConstruction = userDTO.Buildings.FirstOrDefault(b => b.IsBuilt == false && b.BuilderId == newUnit.Id);
+                    Building buildingOnConstruction =
+                        userDTO.Buildings.FirstOrDefault(b => b.IsBuilt == false && b.BuilderId == unit.Id);
                     if (buildingOnConstruction != null)
                     {
                         userDTO.Buildings.Remove(buildingOnConstruction);
@@ -75,13 +78,50 @@ namespace GalaxyQuest.Controllers
                     }
                 }
 
-                newUnit.MoveUnit(unit.DestinationSystem, unit.DestinationPlanet);
-                newUnit.TaskUnit = newUnit.MoveAsync(unit, newUnit, _clock);
+                unit.MoveUnit(postRequestUnitBody.DestinationSystem, postRequestUnitBody.DestinationPlanet);
+                unit.TaskUnit = unit.MoveAsync(postRequestUnitBody, unit, _clock);
 
-                return ResponseHelper.HandleResponse(newUnit);
+                return ResponseHelper.HandleResponse(unit);
             }
 
-            return ResponseHelper.HandleResponse<Unit>(null, notFoundMessage: "Unit not found");
+            if (User.Identity.IsAuthenticated)
+            {
+                switch (postRequestUnitBody.Type)
+                {
+                    case "scout":
+                        Unit scout = new(unitId, "scout", postRequestUnitBody.System, postRequestUnitBody.Planet,
+                            postRequestUnitBody.System, postRequestUnitBody.Planet, userId);
+                        userDTO.AddUnit(scout);
+                        return ResponseHelper.HandleResponse(scout);
+                    case "builder":
+                        Unit builder = new(unitId, "builder", postRequestUnitBody.System, postRequestUnitBody.Planet,
+                            postRequestUnitBody.System, postRequestUnitBody.Planet, userId);
+                        userDTO.AddUnit(builder);
+                        return ResponseHelper.HandleResponse(builder);
+                    /*
+                    case "cruiser":
+                        CruiserUnit cruiser = new(unitId, postRequestUnitBody.System, postRequestUnitBody.Planet,
+                            postRequestUnitBody.System, postRequestUnitBody.Planet, userId);
+                        userDTO.AddUnit(cruiser);
+                        return ResponseHelper.HandleResponse(cruiser);
+                    case "fighter":
+                        FighterUnit fighter = new(unitId, postRequestUnitBody.System, postRequestUnitBody.Planet,
+                            postRequestUnitBody.System, postRequestUnitBody.Planet, userId);
+                        userDTO.AddUnit(fighter);
+                        return ResponseHelper.HandleResponse(fighter);
+                    case "bomber":
+                        BomberUnit bomber = new(unitId, postRequestUnitBody.System, postRequestUnitBody.Planet,
+                            postRequestUnitBody.System, postRequestUnitBody.Planet, userId);
+                        userDTO.AddUnit(bomber);
+                        return ResponseHelper.HandleResponse(bomber);
+                        */
+                    default:
+                        break;
+                }
+                return ResponseHelper.HandleResponse<Unit>(null, notFoundMessage: "Unit not found");
+            }
+
+            return Unauthorized();
         }
 
         /// <summary>
