@@ -1,15 +1,11 @@
-using GalaxyQuest.Controllers;
-using GalaxyQuest.EntitiesDTO;
-using GalaxyQuest.Services;
-using Newtonsoft.Json;
-using Shard.Shared.Core;
+using GalaxyQuest.Entities;
 
-namespace GalaxyQuest.Entities
+namespace GalaxyQuest.EntitiesDTO
 {
     /// <summary>
     /// Represents a building in the galaxy.
     /// </summary>
-    public class BuildingDTO
+    public class BuildingDto
     {
         /// <summary>
         /// Gets or sets the unique identifier for the building.
@@ -54,7 +50,7 @@ namespace GalaxyQuest.Entities
         /// <summary>
         /// Initializes a new instance of the <see cref="Building"/> class.
         /// </summary>
-        public BuildingDTO(string id, string type, string builderId, string resourceCategory, string system, string planet, bool isBuilt, DateTime? estimatedBuildTime)
+        public BuildingDto(string id, string type, string builderId, string resourceCategory, string system, string planet, bool isBuilt, DateTime? estimatedBuildTime)
         {
             // Initialization of properties
             Id = id;

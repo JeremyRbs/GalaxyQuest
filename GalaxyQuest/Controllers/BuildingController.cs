@@ -1,10 +1,10 @@
-﻿using System.Collections.Immutable;
-using GalaxyQuest.Entities;
+﻿using GalaxyQuest.Entities;
 using GalaxyQuest.EntitiesDTO;
 using GalaxyQuest.Buildings;
 using GalaxyQuest.RequestBodies;
 using GalaxyQuest.Services;
-using GalaxyQuest.Units;
+using GalaxyQuest.Units.CombatUnits;
+using GalaxyQuest.Units.PeacefulUnits;
 using GalaxyQuest.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Shard.Shared.Core;
@@ -13,15 +13,15 @@ namespace GalaxyQuest.Controllers
 {
     public class BuildingController : Controller
     {
-        private readonly UserRepository _userRepository;
-        private readonly MapRepository _mapRepository;
-        private readonly IClock _clock;
+        private readonly UserRepository userRepository;
+        private readonly MapRepository mapRepository;
+        private readonly IClock clock;
 
         public BuildingController(UserRepository userRepository, MapRepository mapRepository, IClock clock)
         {
-            _userRepository = userRepository;
-            _mapRepository = mapRepository;
-            _clock = clock;
+            this.userRepository = userRepository;
+            this.mapRepository = mapRepository;
+            this.clock = clock;
         }
 
         /// <summary>
@@ -31,17 +31,17 @@ namespace GalaxyQuest.Controllers
         public async Task<IActionResult> CreateBuilding([FromRoute] string userId, [FromBody] PostRequestBuildingBody buildingRequest)
         {
             // Check if the user exists.
-            UserDTO? userDTO = _userRepository.Users.FirstOrDefault(u => u.Id == userId);
-            if (userDTO == null) return NotFound("User not found.");
+            UserDto? userDTO = userRepository.Users.FirstOrDefault(u => u.Id == userId);
+            if (userDTO == null) return NotFound("BuildingController_CreateBuilding : User not found.");
 
             // Check if the user has a builder unit and its destination is set.
-            Unit unit = userDTO.Units.FirstOrDefault(u => u.Type == "builder");
+            Unit unit = userDTO.Units.FirstOrDefault(u => u.Type == Unit.UnitType.Builder.ToString().ToLower());
             if (unit == null ||
-                unit.Type != "builder" ||
+                unit.Type != Unit.UnitType.Builder.ToString().ToLower() ||
                 string.IsNullOrEmpty(unit.DestinationSystem) ||
                 string.IsNullOrEmpty(unit.DestinationPlanet))
             {
-                return BadRequest("Invalid builder unit or missing destination.");
+                return BadRequest("BuildingController_CreateBuilding : Invalid builder unit or missing destination.");
             }
 
             // Validate the building request.
@@ -49,15 +49,15 @@ namespace GalaxyQuest.Controllers
                 buildingRequest.BuilderId != null &&
                 buildingRequest.BuilderId == unit.Id)
             {
-                if (buildingRequest.Type == "mine")
+                if (buildingRequest.Type == Building.BuildingType.Mine.ToString().ToLower())
                 {
 
                     // Validate the resource category.
-                    if (buildingRequest.ResourceCategory != "liquid" &&
-                        buildingRequest.ResourceCategory != "gaseous" &&
-                        buildingRequest.ResourceCategory != "solid")
+                    if (buildingRequest.ResourceCategory != Building.BuildingResourceCategory.Liquid.ToString().ToLower() &&
+                        buildingRequest.ResourceCategory != Building.BuildingResourceCategory.Gaseous.ToString().ToLower() &&
+                        buildingRequest.ResourceCategory != Building.BuildingResourceCategory.Solid.ToString().ToLower())
                     {
-                        return BadRequest("Invalid resource category.");
+                        return BadRequest("BuildingController_CreateBuilding : Invalid resource category.");
                     }
 
                     // Create a new building of "mine" type and add it to the user's list of buildings.
@@ -66,21 +66,21 @@ namespace GalaxyQuest.Controllers
                         buildingRequest.ResourceCategory,
                         unit.System,
                         unit.Planet,
-                        _clock,
-                        _userRepository,
-                        _mapRepository
+                        clock,
+                        userRepository,
+                        mapRepository
                     );
                     
                     userDTO.Buildings.Add(mine);
                     
-                    BuildingDTO mineDto = new BuildingDTO(mine.Id, mine.Type, mine.BuilderId, mine.ResourceCategory, mine.System, mine.Planet, mine.IsBuilt, mine.EstimatedBuildTime);
+                    BuildingDto mineDto = new BuildingDto(mine.Id, mine.Type, mine.BuilderId, mine.ResourceCategory, mine.System, mine.Planet, mine.IsBuilt, mine.EstimatedBuildTime);
 
                     // Return the building or an error response.
                     return buildingRequest.BuilderId == null || buildingRequest.BuilderId != unit.Id
-                        ? BadRequest("Invalid builder ID format or mismatch.")
+                        ? BadRequest("BuildingController_CreateBuilding : Invalid builder ID format or mismatch for mine creation.")
                         : Ok(mineDto);
                 }
-                else if (buildingRequest.Type == "starport")
+                else if (buildingRequest.Type == Building.BuildingType.Starport.ToString().ToLower())
                 {
                     // Create a new building of "mine" type and add it to the user's list of buildings.
                     StarportBuilding starport = new(
@@ -88,23 +88,23 @@ namespace GalaxyQuest.Controllers
                         buildingRequest.ResourceCategory,
                         unit.System,
                         unit.Planet,
-                        _clock,
-                        _userRepository,
-                        _mapRepository
+                        clock,
+                        userRepository,
+                        mapRepository
                     );
                     
                     userDTO.Buildings.Add(starport);
 
-                    BuildingDTO buildingDto = new BuildingDTO(starport.Id, starport.Type, starport.BuilderId, starport.ResourceCategory, starport.System, starport.Planet, starport.IsBuilt, starport.EstimatedBuildTime);
+                    BuildingDto buildingDto = new BuildingDto(starport.Id, starport.Type, starport.BuilderId, starport.ResourceCategory, starport.System, starport.Planet, starport.IsBuilt, starport.EstimatedBuildTime);
                     
                     // Return the building or an error response.
                     return buildingRequest.BuilderId == null || buildingRequest.BuilderId != unit.Id
-                        ? BadRequest("Invalid builder ID format or mismatch.")
+                        ? BadRequest("BuildingController_CreateBuilding : Invalid builder ID format or mismatch for starport creation.")
                         : Ok(buildingDto);
                 }
-                return BadRequest("Invalid building request.");
+                return BadRequest("BuildingController_CreateBuilding : Invalid building request.");
             }
-            return BadRequest("Invalid building request.");
+            return BadRequest("BuildingController_CreateBuilding : Invalid building request.");
         }
 
         /// <summary>
@@ -113,8 +113,8 @@ namespace GalaxyQuest.Controllers
         [HttpGet("users/{userId}/Buildings")]
         public IActionResult GetBuildings([FromRoute] string userId)
         {
-            UserDTO? userDTO = _userRepository.Users.FirstOrDefault(u => u.Id == userId);
-            return ResponseHelper.HandleResponse(userDTO?.Buildings.Select(b => new BuildingDTO(b.Id, b.Type, b.BuilderId,  b.ResourceCategory, b.System, b.Planet, b.IsBuilt, b.EstimatedBuildTime)).ToList(), $"User with ID '{userId}' not found ...");
+            UserDto? userDTO = userRepository.Users.FirstOrDefault(u => u.Id == userId);
+            return ResponseHelper.HandleResponse(userDTO?.Buildings.Select(b => new BuildingDto(b.Id, b.Type, b.BuilderId,  b.ResourceCategory, b.System, b.Planet, b.IsBuilt, b.EstimatedBuildTime)).ToList(), $"BuildingController_GetBuildings : User with ID '{userId}' not found ...");
         }
 
         /// <summary>
@@ -123,16 +123,16 @@ namespace GalaxyQuest.Controllers
         [HttpGet("users/{userId}/Buildings/{buildingId}")]
         public async Task<IActionResult> GetOneBuilding(string userId, string buildingId)
         {
-            UserDTO? userDTO = _userRepository.Users.FirstOrDefault(u => u.Id == userId);
-            if (userDTO == null) return NotFound("User not found.");
+            UserDto? userDTO = userRepository.Users.FirstOrDefault(u => u.Id == userId);
+            if (userDTO == null) return NotFound("BuildingController_GetOneBuilding : User not found.");
             Building? building = userDTO?.Buildings.FirstOrDefault(u => u.Id == buildingId);
-            if (building == null) { return NotFound("Building not found."); }
-            Unit? unit = _userRepository.GetUnits().FirstOrDefault(u => u.Id == building.BuilderId);
+            if (building == null) { return NotFound("BuildingController_GetOneBuilding : Building not found."); }
+            Unit? unit = userRepository.GetUnits().FirstOrDefault(u => u.Id == building.BuilderId);
 
             // Check if the building is still under construction.
             if (building.EstimatedBuildTime.HasValue)
             {
-                TimeSpan timeRemaining = (TimeSpan)(building.EstimatedBuildTime - _clock.Now);
+                TimeSpan timeRemaining = (TimeSpan)(building.EstimatedBuildTime - clock.Now);
                 if (!building.IsBuilt && timeRemaining <= TimeSpan.FromSeconds(2))
                 {
                     await building.TaskBuilding;
@@ -142,27 +142,50 @@ namespace GalaxyQuest.Controllers
             // If the building is no longer in the user's list, it means it was canceled during construction.
             if (!userDTO.Buildings.Contains(building))
             {
-                return NotFound("Building construction canceled.");
+                return NotFound("BuildingController_GetOneBuilding : Building construction canceled.");
             }
 
-            BuildingDTO buildingDto = new BuildingDTO(building.Id, building.Type, building.BuilderId, building.ResourceCategory, building.System, building.Planet, building.IsBuilt, building.EstimatedBuildTime);
+            BuildingDto buildingDto = new BuildingDto(building.Id, building.Type, building.BuilderId, building.ResourceCategory, building.System, building.Planet, building.IsBuilt, building.EstimatedBuildTime);
             
             // Return the building or an error response.
             return ResponseHelper.HandleResponse(buildingDto);
         }
 
+        /// <summary>
+        /// Handles the queuing of unit creation in a starport building for a specific user.
+        /// </summary>
+        /// <param name="userId">The unique identifier of the user.</param>
+        /// <param name="starportId">The unique identifier of the starport building.</param>
+        /// <param name="postRequestUnitBody">The request body containing information for unit creation.</param>
+        /// <returns>An asynchronous task representing the HTTP action result.</returns>
         [HttpPost("users/{userId}/Buildings/{starportId}/queue")]
         public async Task<IActionResult> QueueBuilding([FromRoute] string userId, string starportId, [FromBody] PostRequestUnitBody postRequestUnitBody)
         {
-            UserDTO? userDto = _userRepository.Users.FirstOrDefault(u => u.Id == userId);
-            if (userDto == null) return NotFound("User not found.");
+            // Retrieve the user from the repository based on the provided userId
+            UserDto? userDto = userRepository.Users.FirstOrDefault(u => u.Id == userId);
+            
+            // Check if the user exists
+            if (userDto == null)
+                return NotFound("BuildingController_QueueBuilding : User not found.");
 
+            // Retrieve the building (starport) from the user's buildings based on the provided starportId
             Building building = userDto?.Buildings.FirstOrDefault(u => u.Id == starportId);
-            if (building == null) {return NotFound("Building not found.");}
-            if (building.Type != "starport") return BadRequest("Building isn't a starport");
-            StarportBuilding starport = (StarportBuilding)(building);
-            if (starport.IsBuilt == false) return BadRequest("Starport is not build yet");
+            
+            // Check if the building exists and is of the correct type (starport)
+            if (building == null)
+                return NotFound("BuildingController_QueueBuilding : Building not found.");
+            
+            if (building.Type != "starport")
+                return BadRequest("BuildingController_QueueBuilding : Building isn't a starport");
 
+            // Convert the building to a StarportBuilding for additional operations
+            StarportBuilding starport = (StarportBuilding)(building);
+
+            // Check if the starport is built
+            if (starport.IsBuilt == false)
+                return BadRequest("BuildingController_QueueBuilding : Starport is not built yet");
+
+            // Process different unit types
             switch (postRequestUnitBody.Type)
             {
                 case "scout":
@@ -172,7 +195,7 @@ namespace GalaxyQuest.Controllers
                         starport.AddUnitToQueue(scout);
                         return Ok(scout);
                     }
-                    return BadRequest("Not enough resources to build");
+                    return BadRequest("BuildingController_QueueBuilding : Not enough resources to build scout unit.");
                 case "builder":
                     if (userDto.BuildResources(postRequestUnitBody.Type))
                     {
@@ -180,7 +203,7 @@ namespace GalaxyQuest.Controllers
                         starport.AddUnitToQueue(builder);
                         return Ok(builder);
                     }
-                    return BadRequest("Not enough resources to build");
+                    return BadRequest("BuildingController_QueueBuilding : Not enough resources to build builder unit.");
                 case "fighter":
                     if (userDto.BuildResources(postRequestUnitBody.Type))
                     {
@@ -188,7 +211,7 @@ namespace GalaxyQuest.Controllers
                         starport.AddUnitToQueue(fighter);
                         return Ok(fighter);
                     }
-                    return BadRequest("Not enough resources to build");
+                    return BadRequest("BuildingController_QueueBuilding : Not enough resources to build fighter unit.");
                 case "bomber":
                     if (userDto.BuildResources(postRequestUnitBody.Type))
                     {
@@ -196,7 +219,7 @@ namespace GalaxyQuest.Controllers
                         starport.AddUnitToQueue(bomber);
                         return Ok(bomber);
                     }
-                    return BadRequest("Not enough resources to build");
+                    return BadRequest("BuildingController_QueueBuilding : Not enough resources to build bomber unit.");
                 case "cruiser":
                     if (userDto.BuildResources(postRequestUnitBody.Type))
                     {
@@ -204,9 +227,9 @@ namespace GalaxyQuest.Controllers
                         starport.AddUnitToQueue(cruiser);
                         return Ok(cruiser);
                     }
-                    return BadRequest("Not enough resources to build");
-                default: 
-                    return BadRequest("Unit type didn't exist");
+                    return BadRequest("BuildingController_QueueBuilding : Not enough resources to build cruiser unit.");
+                default:
+                    return BadRequest("BuildingController_QueueBuilding : Unit type doesn't exist");
             }
         }
     }

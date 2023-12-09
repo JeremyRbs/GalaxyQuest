@@ -6,7 +6,7 @@ namespace GalaxyQuest.EntitiesDTO
     /// <summary>
     /// Represents a Data Transfer Object (DTO) for a user.
     /// </summary>
-    public class UserDTO
+    public class UserDto
     {
         /// <summary>
         /// Gets or sets the unique identifier of the user.
@@ -46,13 +46,27 @@ namespace GalaxyQuest.EntitiesDTO
             {ResourceKind.Water.ToString().ToLower(), 50},
             {ResourceKind.Oxygen.ToString().ToLower(), 50}
         };
+        
+        /// <summary>
+        /// Enumeration of user resources (e.g., "Scout").
+        /// </summary>
+        public enum UserResources
+        {
+            Aluminium,
+            Carbon,
+            Iron,
+            Gold,
+            Titanium,
+            Water,
+            Oxygen
+        }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UserDTO"/> class.
+        /// Initializes a new instance of the <see cref="UserDto"/> class.
         /// </summary>
         /// <param name="id">The unique identifier of the user.</param>
         /// <param name="pseudo">The pseudo (username) of the user.</param>
-        public UserDTO(string id, string pseudo) => (Id, Pseudo, DateOfCreation, Units, Buildings, ResourcesQuantity) = (id, pseudo, DateTimeOffset.Now, new List<Unit>(), new List<Building>(), ResourcesQuantity);
+        public UserDto(string id, string pseudo) => (Id, Pseudo, DateOfCreation, Units, Buildings, ResourcesQuantity) = (id, pseudo, DateTimeOffset.Now, new List<Unit>(), new List<Building>(), ResourcesQuantity);
 
         /// <summary>
         /// Adds a unit to the user's list of units.

@@ -12,7 +12,7 @@ namespace GalaxyQuest.Entities
         /// <summary>
         /// Gets or sets the unique identifier for the building.
         /// </summary>
-        public string Id { get; set; }
+        public string Id { get; }
 
         /// <summary>
         /// Gets or sets the type of the building.
@@ -68,6 +68,25 @@ namespace GalaxyQuest.Entities
         /// Gets or sets the map repository.
         /// </summary>
         private MapRepository MapRepository { get; set; }
+
+        /// <summary>
+        /// Enumeration of building resource category (e.g., "Liquid").
+        /// </summary>
+        public enum BuildingResourceCategory
+        {
+            Liquid,
+            Gaseous,
+            Solid
+        }
+
+        /// <summary>
+        /// Enumeration of building type (e.g., "Mine").
+        /// </summary>
+        public enum BuildingType
+        {
+            Mine,
+            Starport
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Building"/> class.
@@ -133,11 +152,11 @@ namespace GalaxyQuest.Entities
         /// Gets unit, userDTO, and planetDTO based on the builder ID.
         /// </summary>
         /// <returns>A tuple containing the unit, userDTO, and planetDTO.</returns>
-        protected (Unit unit, UserDTO userDTO, PlanetDTO planetDTO) GetUnitUserAndPlanet()
+        protected (Unit unit, UserDto userDTO, PlanetDto planetDTO) GetUnitUserAndPlanet()
         {
             var unit = UserRepository.GetUnits().FirstOrDefault(u => u.Id == BuilderId);
             var userDto = UserRepository.Users.FirstOrDefault(u => u.Id == unit.UserId);
-            var planetDto = (PlanetDTO?)MapRepository.GetOnePlanetWithResources(System, Planet);
+            var planetDto = (PlanetDto?)MapRepository.GetOnePlanetWithResources(System, Planet);
 
             return (unit, userDto, planetDto);
         }

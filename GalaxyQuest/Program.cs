@@ -11,6 +11,7 @@ builder.Services.AddSingleton<MapRepository>();
 builder.Services.AddSingleton<UserRepository>();
 builder.Services.AddSingleton<IClock>(new SystemClock());
 builder.Services.AddControllers();
+builder.Services.AddHostedService<CombatUnitService>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

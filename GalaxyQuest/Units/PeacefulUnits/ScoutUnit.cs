@@ -1,27 +1,23 @@
-﻿using GalaxyQuest.Entities;
-
-namespace GalaxyQuest.Units
+﻿namespace GalaxyQuest.Units.PeacefulUnits
 {
     /// <summary>
     /// Represents a scout unit in the galaxy.
     /// </summary>
-    public class ScoutUnit : Unit
+    public class ScoutUnit : PeacefulUnit
     {
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScoutUnit"/> class.
         /// </summary>
         public ScoutUnit(string system, string planet, string userId)
-            : base("scout", system, planet, userId)
+            : base(UnitType.Scout.ToString().ToLower(), system, planet, userId)
         {}
         
-        /*
         /// <summary>
         /// Initializes a new instance of the <see cref="ScoutUnit"/> class.
         /// </summary>
         public ScoutUnit(string id, string system, string planet, string destinationSystem, string destinationPlanet, string userId)
-            : base(id, "scout", system, planet, destinationSystem, destinationPlanet, userId)
+            : base(id, UnitType.Scout.ToString().ToLower(), system, planet, destinationSystem, destinationPlanet, userId)
         { }
-        */
     }
 }

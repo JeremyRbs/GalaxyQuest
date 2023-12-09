@@ -6,9 +6,9 @@ namespace GalaxyQuest.Controllers
 {
     public class GalaxyController : Controller
     {
-        private readonly MapRepository _mapRepository;
+        private readonly MapRepository mapRepository;
 
-        public GalaxyController(MapRepository mapRepository) => _mapRepository = mapRepository;
+        public GalaxyController(MapRepository mapRepository) => this.mapRepository = mapRepository;
 
         /// <summary>
         /// Gets all systems without resource details.
@@ -16,7 +16,7 @@ namespace GalaxyQuest.Controllers
         [HttpGet("Systems")]
         public IActionResult GetSystems()
         {
-            var systems = _mapRepository.GetAllSystemsWithoutResources();
+            var systems = mapRepository.GetAllSystemsWithoutResources();
             return ResponseHelper.HandleResponse(systems);
         }
 
@@ -26,8 +26,8 @@ namespace GalaxyQuest.Controllers
         [HttpGet("Systems/{systemName}")]
         public IActionResult GetSystemName([FromRoute] string systemName)
         {
-            var system = _mapRepository.GetSystem(systemName);
-            return ResponseHelper.HandleResponse(system, $"'{systemName}' not found ...");
+            var system = mapRepository.GetSystem(systemName);
+            return ResponseHelper.HandleResponse(system, $"GalaxyController_GetSystemName : '{systemName}' not found.");
         }
 
         /// <summary>
@@ -36,8 +36,8 @@ namespace GalaxyQuest.Controllers
         [HttpGet("Systems/{systemName}/planets")]
         public IActionResult GetAllPlanetsOneSystem([FromRoute] string systemName)
         {
-            var system = _mapRepository.GetPlanets(systemName);
-            return ResponseHelper.HandleResponse(system.Planets, $"'{systemName}' not found ...");
+            var system = mapRepository.GetPlanets(systemName);
+            return ResponseHelper.HandleResponse(system.Planets, $"GalaxyController_GetAllPlanetsOneSystem : '{systemName}' not found.");
         }
 
         /// <summary>
@@ -46,8 +46,8 @@ namespace GalaxyQuest.Controllers
         [HttpGet("Systems/{systemName}/planets/{planetName}")]
         public IActionResult GetSinglePlanet([FromRoute] string systemName, string planetName)
         {
-            var planet = _mapRepository.GetOnePlanet(systemName, planetName);
-            return ResponseHelper.HandleResponse(planet, $"'{planetName}' not found ...");
+            var planet = mapRepository.GetOnePlanet(systemName, planetName);
+            return ResponseHelper.HandleResponse(planet, $"GalaxyController_GetSinglePlanet : '{planetName}' not found.");
         }
     }
 }

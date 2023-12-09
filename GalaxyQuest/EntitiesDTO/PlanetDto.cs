@@ -1,11 +1,9 @@
-﻿using GalaxyQuest.Entities;
-
-namespace GalaxyQuest.EntitiesDTO
+﻿namespace GalaxyQuest.EntitiesDTO
 {
     /// <summary>
     /// Represents a DTO (Data Transfer Object) for a planet.
     /// </summary>
-    public class PlanetDTO
+    public class PlanetDto
     {
         /// <summary>
         /// Gets the name of the planet.
@@ -23,12 +21,12 @@ namespace GalaxyQuest.EntitiesDTO
         public Dictionary<string, int>? ResourceQuantity { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PlanetDTO"/> class.
+        /// Initializes a new instance of the <see cref="PlanetDto"/> class.
         /// </summary>
         /// <param name="name">The name of the planet.</param>
         /// <param name="size">The size of the planet.</param>
         /// <param name="resourceQuantity">The resource quantity on the planet.</param>
-        public PlanetDTO(string name, int size, Dictionary<string, int>? resourceQuantity) => (Name, Size, ResourceQuantity) = (name, size, resourceQuantity);
+        public PlanetDto(string name, int size, Dictionary<string, int>? resourceQuantity) => (Name, Size, ResourceQuantity) = (name, size, resourceQuantity);
 
         /// <summary>
         /// Gets the resource with the maximum quantity, excluding specified resources.
@@ -43,7 +41,7 @@ namespace GalaxyQuest.EntitiesDTO
             }
 
             var resourceWithMaxQuantity = ResourceQuantity
-                .Where(kv => kv.Value > 0 && kv.Key != "water" && kv.Key != "oxygen" && kv.Key != resource)
+                .Where(kv => kv.Value > 0 && kv.Key != UserDto.UserResources.Water.ToString().ToLower() && kv.Key != UserDto.UserResources.Oxygen.ToString().ToLower() && kv.Key != resource)
                 .OrderByDescending(kv => kv.Value)
                 .FirstOrDefault();
 
