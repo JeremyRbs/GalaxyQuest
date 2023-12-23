@@ -15,13 +15,16 @@ namespace GalaxyQuest.Utilities
         /// <param name="notFoundMessage">Optional message for not found response.</param>
         /// <param name="badRequestMessage">Optional message for bad request response.</param>
         /// <returns>IActionResult representing the handled response.</returns>
-        public static IActionResult HandleResponse<T>(T result, string? notFoundMessage = null, string? badRequestMessage = null) =>
+        public static IActionResult HandleResponse<T>(T result, string? notFoundMessage = null, string? badRequestMessage = null, string? okMessage = null) =>
             result != null
-                ? new JsonResult(result)
+                ? !string.IsNullOrEmpty(okMessage)
+                    ? new OkObjectResult(new { Message = okMessage, Result = result })
+                    : new JsonResult(result)
                 : (!string.IsNullOrEmpty(notFoundMessage)
                     ? new NotFoundObjectResult(notFoundMessage)
                     : (!string.IsNullOrEmpty(badRequestMessage)
                         ? new BadRequestObjectResult(badRequestMessage)
                         : new NotFoundResult()));
+
     }
 }

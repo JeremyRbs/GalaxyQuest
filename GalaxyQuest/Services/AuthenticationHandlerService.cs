@@ -1,7 +1,10 @@
+using System;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace GalaxyQuest.Services
@@ -14,57 +17,56 @@ namespace GalaxyQuest.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationHandlerService"/> class.
         /// </summary>
+        /// <param name="options">The options for the authentication scheme.</param>
+        /// <param name="logger">The logger for this authentication handler.</param>
+        /// <param name="encoder">The URL encoder.</param>
+        /// <param name="clock">The system clock.</param>
         public AuthenticationHandlerService(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
-            ISystemClock clock)
-            : base(options, logger, encoder, clock)
-        {
-        }
+            ISystemClock clock) : base(options, logger, encoder, clock) { }
 
         /// <summary>
-        /// Handles the authentication process.
+        /// Handles the authentication process asynchronously.
         /// </summary>
         /// <returns>The result of the authentication process.</returns>
-        protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
+        protected async override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            if (Request.Headers.ContainsKey("Authorization"))
+            // Check if the Authorization header is present in the request
+            if (!Request.Headers.ContainsKey("Authorization"))
             {
-                var authorizationHeader = Request.Headers["Authorization"].ToString();
-
-                if (authorizationHeader.StartsWith("Basic "))
-                {
-                    var base64Credentials = authorizationHeader.Substring("Basic ".Length).Trim();
-
-                    var decodedCredentials = Encoding.UTF8.GetString(Convert.FromBase64String(base64Credentials));
-
-                    if (IsValidCredentials(decodedCredentials))
-                    {
-                        var claims = new[] { new Claim(ClaimTypes.Name, "Username") };
-                        var identity = new ClaimsIdentity(claims, Scheme.Name);
-                        var principal = new ClaimsPrincipal(identity);
-                        var ticket = new AuthenticationTicket(principal, Scheme.Name);
-                        return AuthenticateResult.Success(ticket);
-                    }
-                    else
-                    {
-                        return AuthenticateResult.Fail("Invalid credentials.");
-                    }
-                }
+                return AuthenticateResult.NoResult();
             }
-            return AuthenticateResult.NoResult();
+
+            // Extract the credentials from the Authorization header
+            string authHeader = Request.Headers["Authorization"].ToString().Substring(6);
+            string decodedString = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(authHeader));
+
+            // Validate the credentials and determine if the user is an admin
+            bool isAdmin = IsValidCredentials(decodedString);
+
+            // Create claims for the authenticated user
+            var claims = new[] {
+                new Claim(ClaimTypes.Name, isAdmin ? "admin" : "fake-remote"),
+                new Claim(ClaimTypes.Role, isAdmin ? "admin" : "shard")
+            };
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "Tokens"));
+            var ticket = new AuthenticationTicket(principal, Scheme.Name);
+
+            // Return a successful authentication result
+            return AuthenticateResult.Success(ticket);
         }
 
         /// <summary>
         /// Validates the provided credentials.
         /// </summary>
-        /// <param name="decodedCredentials">The decoded credentials.</param>
+        /// <param name="decodedString">The decoded string containing credentials.</param>
         /// <returns>True if the credentials are valid; otherwise, false.</returns>
-        private bool IsValidCredentials(string decodedCredentials)
+        private bool IsValidCredentials(string decodedString)
         {
-            var splitted = decodedCredentials.Split(':');
-            return splitted.Length == 2 && splitted[0] == "admin" && splitted[1] == "password";
+            // Simple validation logic for demonstration purposes
+            return decodedString.Contains("admin:password");
         }
     }
 }
