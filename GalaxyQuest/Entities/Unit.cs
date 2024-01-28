@@ -59,6 +59,30 @@ using GalaxyQuest.RequestBodies;
         public Task? TaskUnit { get; set; }
         
         /// <summary>
+        /// Gets or sets the destination shard of the unit.
+        /// </summary>
+        public string? DestinationShard { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the resources quantity dictionary associated with the unit.
+        /// </summary>
+        public Dictionary<string, int>? ResourcesQuantity { get; set; } = new Dictionary<string, int>() 
+        {
+            { "carbon", 0 },
+            { "iron", 0 },
+            { "gold", 0 },
+            { "aluminium", 0 },
+            { "titanium", 0 },
+            { "water", 0 },
+            { "oxygen", 0 }
+        };
+        
+        /// <summary>
+        /// Gets or sets the health of the unit.
+        /// </summary>
+        public int Health { get; set; }
+        
+        /// <summary>
         /// Enumeration of unit type (e.g., "Scout").
         /// </summary>
         public enum UnitType
@@ -67,7 +91,8 @@ using GalaxyQuest.RequestBodies;
             Builder,
             Cruiser,
             Fighter,
-            Bomber
+            Bomber,
+            Cargo
         }
 
         /// <summary>
@@ -81,6 +106,16 @@ using GalaxyQuest.RequestBodies;
             (Id, Type, System, Planet, DestinationSystem, DestinationPlanet, EstimatedTimeOfArrival, TaskUnit, UserId, IsMoving) =
             (Guid.NewGuid().ToString(), type, system, planet, null, null, null, null, userId, false);
         
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Unit"/> class.
+        /// </summary>
+        /// <param name="id">The id of the unit.</param>
+        /// <param name="type">The type of the unit.</param>
+        /// <param name="system">The current system of the unit.</param>
+        /// <param name="planet">The current planet of the unit.</param>
+        /// <param name="destinationSystem">The destination system of the unit.</param>
+        /// <param name="destinationPlanet">The destination planet of the unit.</param>
+        /// <param name="userId">The user ID associated with the unit.</param>
         public Unit(string id, string type, string system, string planet, string destinationSystem, string destinationPlanet, string userId) =>
             (Id, Type, System, Planet, DestinationSystem, DestinationPlanet, EstimatedTimeOfArrival, TaskUnit, UserId, IsMoving) =
             (id, type, system, planet, destinationSystem, destinationPlanet, null, null, userId, false);

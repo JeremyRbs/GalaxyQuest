@@ -177,7 +177,7 @@ namespace GalaxyQuest.Controllers
             
             if (building.Type != "starport")
                 return BadRequest("BuildingController_QueueBuilding : Building isn't a starport");
-
+            
             // Convert the building to a StarportBuilding for additional operations
             StarportBuilding starport = (StarportBuilding)(building);
 
@@ -228,6 +228,15 @@ namespace GalaxyQuest.Controllers
                         return Ok(cruiser);
                     }
                     return BadRequest("BuildingController_QueueBuilding : Not enough resources to build cruiser unit.");
+                case "cargo":
+                    if (userDto.BuildResources(postRequestUnitBody.Type))
+                    {
+                        CargoUnit cargo = new (starport.System, starport.Planet, userDto.Id);
+                        starport.AddUnitToQueue(cargo);
+                        return Ok(cargo);
+                    }
+                    return BadRequest("BuildingController_QueueBuilding : Not enough resources to build cargo unit.");
+                
                 default:
                     return BadRequest("BuildingController_QueueBuilding : Unit type doesn't exist");
             }
