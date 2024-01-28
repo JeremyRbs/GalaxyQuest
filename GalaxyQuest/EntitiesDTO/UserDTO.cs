@@ -69,6 +69,13 @@ namespace GalaxyQuest.EntitiesDTO
         public UserDto(string id, string pseudo) => (Id, Pseudo, DateOfCreation, Units, Buildings, ResourcesQuantity) = (id, pseudo, DateTimeOffset.Now, new List<Unit>(), new List<Building>(), ResourcesQuantity);
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="UserDto"/> class.
+        /// </summary>
+        /// <param name="id">The unique identifier of the user.</param>
+        /// <param name="pseudo">The pseudo (username) of the user.</param>
+        public UserDto(string id, string pseudo, DateTimeOffset dateOfCreation) => (Id, Pseudo, DateOfCreation, Units, Buildings, ResourcesQuantity) = (id, pseudo, dateOfCreation, new List<Unit>(), new List<Building>(), ResourcesQuantity);
+        
+        /// <summary>
         /// Adds a unit to the user's list of units.
         /// </summary>
         /// <param name="unit">The unit to be added.</param>
@@ -129,6 +136,20 @@ namespace GalaxyQuest.EntitiesDTO
                             return true;
                         }
                         break;
+                    
+                    case "cargo":
+                        if (ResourcesQuantity.ContainsKey("carbon") && ResourcesQuantity["carbon"] >= 10 &&
+                            ResourcesQuantity.ContainsKey("iron") && ResourcesQuantity["iron"] >= 10 &&
+                            ResourcesQuantity.ContainsKey("gold") && ResourcesQuantity["gold"] >= 5)
+                        {
+                            DeductResources("carbon", 10);
+                            DeductResources("iron", 10);
+                            DeductResources("gold", 5);
+                            return true;
+                        }
+                        break;
+
+                    case "transport":
 
                     default:
                         break;
@@ -137,7 +158,22 @@ namespace GalaxyQuest.EntitiesDTO
 
             return false;
         }
+        
+        /// <summary>
+        /// Gets a list of buildings of a specified type.
+        /// </summary>
+        /// <param name="type">The type of building to retrieve.</param>
+        /// <returns>A list of buildings matching the specified type, or null if none are found.</returns>
+        public List<Building>? GetBuildingByType(string type)
+        {
+            return Buildings.Where(building => building.Type == type).ToList();
+        }
 
+        /// <summary>
+        /// Deducts a specified quantity from the resources of a given name.
+        /// </summary>
+        /// <param name="resourceName">The name of the resource to deduct from.</param>
+        /// <param name="quantity">The quantity to deduct from the resource.</param>
         private void DeductResources(string resourceName, int quantity)
         {
             if (ResourcesQuantity.ContainsKey(resourceName))
@@ -145,5 +181,6 @@ namespace GalaxyQuest.EntitiesDTO
                 ResourcesQuantity[resourceName] -= quantity;
             }
         }
+
     }
 }

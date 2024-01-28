@@ -11,6 +11,7 @@ namespace GalaxyQuest.Units
     /// </summary>
     public class CombatUnit : Unit
     {
+        
         /// <summary>
         /// Gets or sets the health of the combat unit.
         /// </summary>

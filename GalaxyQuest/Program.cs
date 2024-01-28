@@ -1,3 +1,4 @@
+using GalaxyQuest.Entities;
 using GalaxyQuest.Services;
 using Microsoft.AspNetCore.Authentication;
 using Shard.Shared.Core;
@@ -12,9 +13,11 @@ builder.Services.AddSingleton<UserRepository>();
 builder.Services.AddSingleton<IClock>(new SystemClock());
 builder.Services.AddControllers();
 builder.Services.AddHostedService<CombatUnitService>();
+builder.Services.Configure<Dictionary<string, Wormholes>>(builder.Configuration.GetSection("Wormholes"));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient();
 builder.Services.AddAuthentication("SchemeName")
     .AddScheme<AuthenticationSchemeOptions, AuthenticationHandlerService>("SchemeName", options => {});
 var app = builder.Build();
