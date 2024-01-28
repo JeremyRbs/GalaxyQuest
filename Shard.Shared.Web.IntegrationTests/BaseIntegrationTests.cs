@@ -81,19 +81,6 @@ public abstract partial class BaseIntegrationTests<TEntryPoint, TWebApplicationF
 
         return client;
     }
-
-    private HttpClient CreateClient()
-    {
-        var client = factory.CreateDefaultClient(
-            factory.ClientOptions.BaseAddress,
-            new RedirectHandler(),
-            new CookieContainerHandler(),
-            new TimeoutHandler());
-
-        client.SetTimeoutIfNotDebug(TimeSpan.FromSeconds(3));
-
-        return client;
-    }
 }
 
 public abstract class BaseIntegrationTests<TEntryPoint>: BaseIntegrationTests<TEntryPoint, WebApplicationFactory<TEntryPoint>>
