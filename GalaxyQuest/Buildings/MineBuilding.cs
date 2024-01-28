@@ -1,5 +1,4 @@
 ﻿using GalaxyQuest.Entities;
-using GalaxyQuest.EntitiesDTO;
 using GalaxyQuest.Services;
 using Shard.Shared.Core;
 
@@ -24,24 +23,32 @@ namespace GalaxyQuest.Buildings
         {
         }
 
+        protected override void BuildingWork(IClock clock)
+        {
+            ExtractResources(clock);
+        }
+
         /// <summary>
         /// Extracts resources based on the resource category asynchronously.
         /// </summary>
-        /// <param name="_clock">The clock interface.</param>
+        /// <param name="clock">The clock interface.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public override async Task ExtractResources(IClock _clock)
+        public async Task ExtractResources(IClock clock)
         {
-            var (unit, userDTO, planetDTO) = GetUnitUserAndPlanet();
+            var (unit, userDto, planetDto) = GetUnitUserAndPlanet();
             int quantityToExtract = 1;
 
             // Local function to extract a specific resource
             async Task ExtractResourceAsync(string resourceName, int quantity)
             {
-                while (planetDTO.ResourceQuantity[resourceName] > 0)
+                while (planetDto.ResourceQuantity != null && planetDto.ResourceQuantity[resourceName] > 0)
                 {
-                    await _clock.Delay(TimeSpan.FromMinutes(1));
-                    userDTO.ResourcesQuantity[resourceName] += quantity;
-                    planetDTO.ResourceQuantity[resourceName] -= quantity;
+                    await clock.Delay(TimeSpan.FromMinutes(1));
+                    if (userDto.ResourcesQuantity != null)
+                    {
+                        userDto.ResourcesQuantity[resourceName] += quantity;
+                    }
+                    planetDto.ResourceQuantity[resourceName] -= quantity;
                 }
             }
 
@@ -55,8 +62,8 @@ namespace GalaxyQuest.Buildings
             }
             else
             {
-                string? mostPresentResource = planetDTO.GetResourceWithMaxQuantity(null);
-                string? secondPresentResource = planetDTO.GetSecondResourceWithMaxQuantity(mostPresentResource);
+                string? mostPresentResource = planetDto.GetResourceWithMaxQuantity(null);
+                string? secondPresentResource = planetDto.GetSecondResourceWithMaxQuantity(mostPresentResource);
 
                 while (mostPresentResource != null && (mostPresentResource != "water" || mostPresentResource != "oxygen"))
                 {
@@ -64,20 +71,20 @@ namespace GalaxyQuest.Buildings
 
                     while (canExtract)
                     {
-                        await _clock.Delay(TimeSpan.FromMinutes(1));
-                        userDTO.ResourcesQuantity[mostPresentResource] += quantityToExtract;
-                        planetDTO.ResourceQuantity[mostPresentResource] -= quantityToExtract;
+                        await clock.Delay(TimeSpan.FromMinutes(1));
+                        userDto.ResourcesQuantity[mostPresentResource] += quantityToExtract;
+                        planetDto.ResourceQuantity[mostPresentResource] -= quantityToExtract;
 
-                        if (planetDTO.ResourceQuantity[mostPresentResource] == planetDTO.ResourceQuantity[secondPresentResource] ||
-                            planetDTO.ResourceQuantity[mostPresentResource] == planetDTO.ResourceQuantity[secondPresentResource] - quantityToExtract ||
-                            planetDTO.ResourceQuantity[mostPresentResource] == 0)
+                        if (planetDto.ResourceQuantity[mostPresentResource] == planetDto.ResourceQuantity[secondPresentResource] ||
+                            planetDto.ResourceQuantity[mostPresentResource] == planetDto.ResourceQuantity[secondPresentResource] - quantityToExtract ||
+                            planetDto.ResourceQuantity[mostPresentResource] == 0)
                         {
                             canExtract = false;
                         }
                     }
 
-                    mostPresentResource = planetDTO.GetResourceWithMaxQuantity(mostPresentResource);
-                    secondPresentResource = planetDTO.GetSecondResourceWithMaxQuantity(mostPresentResource);
+                    mostPresentResource = planetDto.GetResourceWithMaxQuantity(mostPresentResource);
+                    secondPresentResource = planetDto.GetSecondResourceWithMaxQuantity(mostPresentResource);
                 }
             }
         }

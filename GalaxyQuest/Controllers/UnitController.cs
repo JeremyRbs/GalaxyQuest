@@ -4,19 +4,21 @@ using GalaxyQuest.Utilities;
 using GalaxyQuest.Services;
 using Microsoft.AspNetCore.Mvc;
 using Shard.Shared.Core;
-using System.Threading.Tasks;
+using GalaxyQuest.RequestBodies;
+using GalaxyQuest.Units.CombatUnits;
+using GalaxyQuest.Units.PeacefulUnits;
 
 namespace GalaxyQuest.Controllers
 {
     public class UnitController : Controller
     {
-        private readonly UserRepository _userRepository;
-        private readonly MapRepository _mapRepository;
-        private readonly IClock _clock;
+        private readonly UserRepository userRepository;
+        private readonly MapRepository mapRepository;
+        private readonly IClock clock;
 
         public UnitController(UserRepository userRepository, MapRepository mapRepository, IClock clock)
         {
-            (_userRepository, _mapRepository, _clock) = (userRepository, mapRepository, clock);
+            (this.userRepository, this.mapRepository, this.clock) = (userRepository, mapRepository, clock);
         }
 
         /// <summary>
@@ -25,8 +27,8 @@ namespace GalaxyQuest.Controllers
         [HttpGet("users/{userId}/Units")]
         public IActionResult GetUserUnits([FromRoute] string userId)
         {
-            UserDTO? userDTO = _userRepository.Users.FirstOrDefault(u => u.Id == userId);
-            return ResponseHelper.HandleResponse(userDTO?.Units, $"User with ID '{userId}' not found ...");
+            UserDto? userDTO = userRepository.Users.FirstOrDefault(u => u.Id == userId);
+            return ResponseHelper.HandleResponse(userDTO?.Units, $"UnitController_GetUserUnits : User with ID '{userId}' not found ...");
         }
 
         /// <summary>
@@ -35,17 +37,17 @@ namespace GalaxyQuest.Controllers
         [HttpGet("users/{userId}/Units/{unitId}")]
         public async Task<IActionResult> GetSingleUserUnit([FromRoute] string userId, string unitId)
         {
-            UserDTO? userDTO = _userRepository.Users.FirstOrDefault(s => s.Id == userId);
+            UserDto? userDTO = userRepository.Users.FirstOrDefault(s => s.Id == userId);
             Unit? unit = userDTO?.Units.FirstOrDefault(u => u.Id == unitId);
 
             if (unit == null)
             {
-                return ResponseHelper.HandleResponse<Unit>(null, notFoundMessage: "Unit not found");
+                return ResponseHelper.HandleResponse<Unit>(null, notFoundMessage: "UnitController_GetSingleUserUnit : Unit not found");
             }
 
             if (unit.EstimatedTimeOfArrival.HasValue)
             {
-                var timeOfArrival = (unit.EstimatedTimeOfArrival.Value - _clock.Now).TotalSeconds;
+                var timeOfArrival = (unit.EstimatedTimeOfArrival.Value - clock.Now).TotalSeconds;
                 await (timeOfArrival <= 2 ? unit.TaskUnit : Task.CompletedTask);
                 unit.Planet = timeOfArrival > 2 ? null : unit.Planet;
             }
@@ -57,30 +59,66 @@ namespace GalaxyQuest.Controllers
         /// Updates the status of a specific unit for a user.
         /// </summary>
         [HttpPut("users/{userId}/Units/{unitId}")]
-        public IActionResult ChangeUnitStatus(string userId, string unitId, [FromBody] Unit unit)
+        public IActionResult ChangeUnitStatus(string userId, string unitId, [FromBody] PostRequestUnitBody postRequestUnitBody)
         {
-            UserDTO? userDTO = _userRepository.Users.FirstOrDefault(s => s.Id == userId);
-            Unit? newUnit = userDTO?.Units.FirstOrDefault(u => u.Id == unitId);
+            UserDto? userDto = userRepository.Users.FirstOrDefault(s => s.Id == userId);
+            Unit? unit = userDto?.Units.FirstOrDefault(u => u.Id == unitId);
 
-            if (newUnit != null)
+            if (unit != null)
             {
-                if (newUnit.Type == "builder" && newUnit.Planet != unit.DestinationPlanet)
+                if (unit.Type == Unit.UnitType.Builder.ToString().ToLower() && unit.Planet != postRequestUnitBody.DestinationPlanet)
                 {
-                    Building buildingOnConstruction = userDTO.Buildings.FirstOrDefault(b => b.IsBuilt == false && b.BuilderId == newUnit.Id);
+                    Building buildingOnConstruction =
+                        userDto.Buildings.FirstOrDefault(b => b.IsBuilt == false && b.BuilderId == unit.Id);
                     if (buildingOnConstruction != null)
                     {
-                        userDTO.Buildings.Remove(buildingOnConstruction);
+                        userDto.Buildings.Remove(buildingOnConstruction);
                         buildingOnConstruction.CancelBuildingProcess();
                     }
                 }
 
-                newUnit.MoveUnit(unit.DestinationSystem, unit.DestinationPlanet);
-                newUnit.TaskUnit = newUnit.MoveAsync(unit, newUnit, _clock);
+                unit.MoveUnit(postRequestUnitBody.DestinationSystem, postRequestUnitBody.DestinationPlanet);
+                unit.TaskUnit = unit.MoveAsync(postRequestUnitBody, unit, clock);
 
-                return ResponseHelper.HandleResponse(newUnit);
+                return ResponseHelper.HandleResponse(unit);
             }
 
-            return ResponseHelper.HandleResponse<Unit>(null, notFoundMessage: "Unit not found");
+            if (User.Identity.IsAuthenticated)
+            {
+                switch (postRequestUnitBody.Type)
+                {
+                    case "scout":
+                        ScoutUnit scout = new(unitId, postRequestUnitBody.System, postRequestUnitBody.Planet,
+                            postRequestUnitBody.System, postRequestUnitBody.Planet, userId);
+                        userDto.AddUnit(scout);
+                        return ResponseHelper.HandleResponse(scout);
+                    case "builder" :
+                        BuilderUnit builder = new(unitId, postRequestUnitBody.System, postRequestUnitBody.Planet,
+                            postRequestUnitBody.System, postRequestUnitBody.Planet, userId);
+                        userDto.AddUnit(builder);
+                        return ResponseHelper.HandleResponse(builder);
+                    case "cruiser":
+                        CruiserUnit cruiser = new(unitId, postRequestUnitBody.System, postRequestUnitBody.Planet,
+                            postRequestUnitBody.System, postRequestUnitBody.Planet, userId);
+                        userDto.AddUnit(cruiser);
+                        return ResponseHelper.HandleResponse(cruiser);
+                    case "fighter":
+                        FighterUnit fighter = new(unitId, postRequestUnitBody.System, postRequestUnitBody.Planet,
+                            postRequestUnitBody.System, postRequestUnitBody.Planet, userId);
+                        userDto.AddUnit(fighter);
+                        return ResponseHelper.HandleResponse(fighter);
+                    case "bomber":
+                        BomberUnit bomber = new(unitId, postRequestUnitBody.System, postRequestUnitBody.Planet,
+                            postRequestUnitBody.System, postRequestUnitBody.Planet, userId);
+                        userDto.AddUnit(bomber);
+                        return ResponseHelper.HandleResponse(bomber);
+                    default:
+                        break;
+                }
+                return ResponseHelper.HandleResponse<Unit>(null, notFoundMessage: "UnitController_ChangeUnitStatus : Unit not found");
+            }
+
+            return Unauthorized();
         }
 
         /// <summary>
@@ -89,15 +127,15 @@ namespace GalaxyQuest.Controllers
         [HttpGet("users/{userId}/Units/{unitId}/location")]
         public IActionResult GetSingleUserUnitLocation([FromRoute] string userId, string unitId)
         {
-            UserDTO? userDTO = _userRepository.Users.FirstOrDefault(s => s.Id == userId);
+            UserDto? userDTO = userRepository.Users.FirstOrDefault(s => s.Id == userId);
             Unit? unit = userDTO?.Units.FirstOrDefault(u => u.Id == unitId);
-            PlanetDTO? planetDTO = _mapRepository.GetOnePlanetWithResources(unit.System, unit.Planet);
+            PlanetDto? planetDTO = mapRepository.GetOnePlanetWithResources(unit.System, unit.Planet);
 
             if (planetDTO != null)
             {
                 Location? unitLocation = new Location(unit.System, unit.DestinationPlanet, planetDTO?.ResourceQuantity);
 
-                if (unit.Type == "builder")
+                if (unit.Type == Unit.UnitType.Builder.ToString().ToLower())
                 {
                     unitLocation.ResourcesQuantity = null;
                 }
@@ -105,7 +143,7 @@ namespace GalaxyQuest.Controllers
                 return ResponseHelper.HandleResponse(unitLocation);
             }
 
-            return ResponseHelper.HandleResponse<Location>(null, notFoundMessage: "Location not found");
+            return ResponseHelper.HandleResponse<Location>(null, notFoundMessage: "UnitController_GetSingleUserUnitLocation : Location not found");
         }
     }
 }

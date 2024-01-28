@@ -1,6 +1,4 @@
-﻿using Shard.Shared.Core;
-
-namespace GalaxyQuest.Entities
+﻿namespace GalaxyQuest.Entities
 {
     /// <summary>
     /// Represents a user entity.
