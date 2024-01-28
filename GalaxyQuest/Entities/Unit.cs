@@ -1,10 +1,7 @@
-﻿using GalaxyQuest.EntitiesDTO;
-using GalaxyQuest.Services;
-using Shard.Shared.Core;
-using System;
-using System.Threading.Tasks;
+﻿using Shard.Shared.Core;
+using GalaxyQuest.RequestBodies;
 
-namespace GalaxyQuest.Entities
+ namespace GalaxyQuest.Entities
 {
     /// <summary>
     /// Represents a unit entity.
@@ -60,6 +57,18 @@ namespace GalaxyQuest.Entities
         /// Gets or sets the task associated with the unit.
         /// </summary>
         public Task? TaskUnit { get; set; }
+        
+        /// <summary>
+        /// Enumeration of unit type (e.g., "Scout").
+        /// </summary>
+        public enum UnitType
+        {
+            Scout,
+            Builder,
+            Cruiser,
+            Fighter,
+            Bomber
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Unit"/> class.
@@ -71,6 +80,10 @@ namespace GalaxyQuest.Entities
         public Unit(string type, string system, string planet, string userId) =>
             (Id, Type, System, Planet, DestinationSystem, DestinationPlanet, EstimatedTimeOfArrival, TaskUnit, UserId, IsMoving) =
             (Guid.NewGuid().ToString(), type, system, planet, null, null, null, null, userId, false);
+        
+        public Unit(string id, string type, string system, string planet, string destinationSystem, string destinationPlanet, string userId) =>
+            (Id, Type, System, Planet, DestinationSystem, DestinationPlanet, EstimatedTimeOfArrival, TaskUnit, UserId, IsMoving) =
+            (id, type, system, planet, destinationSystem, destinationPlanet, null, null, userId, false);
 
         /// <summary>
         /// Moves the unit to the specified system and planet.
@@ -83,43 +96,43 @@ namespace GalaxyQuest.Entities
         /// <summary>
         /// Moves the unit asynchronously based on the provided unit body and clock.
         /// </summary>
-        /// <param name="unitBody">The unit body containing destination information.</param>
+        /// <param name="postRequestUnitBody">The unit body containing destination information.</param>
         /// <param name="unit">The unit to be moved.</param>
-        /// <param name="_clock">The clock instance for handling delays.</param>
-        public async Task MoveAsync(Unit unitBody, Unit? unit, IClock _clock)
+        /// <param name="clock">The clock instance for handling delays.</param>
+        public async Task MoveAsync(PostRequestUnitBody postRequestUnitBody, Unit? unit, IClock clock)
         {
-            unit.DestinationPlanet = unitBody.DestinationPlanet;
-            unit.DestinationSystem = unitBody.DestinationSystem;
+            unit.DestinationPlanet = postRequestUnitBody.DestinationPlanet;
+            unit.DestinationSystem = postRequestUnitBody.DestinationSystem;
             unit.IsMoving = true;
 
-            if (unitBody.DestinationSystem == unitBody.System)
+            if (postRequestUnitBody.DestinationSystem == postRequestUnitBody.System)
             {
-                if (unitBody.DestinationPlanet != null)
+                if (postRequestUnitBody.DestinationPlanet != null)
                 {
-                    unit.EstimatedTimeOfArrival = _clock.Now.AddSeconds(15);
-                    await _clock.Delay(15000);
+                    unit.EstimatedTimeOfArrival = clock.Now.AddSeconds(15);
+                    await clock.Delay(15000);
                 }
                 else
                 {
-                    unit.EstimatedTimeOfArrival = _clock.Now;
+                    unit.EstimatedTimeOfArrival = clock.Now;
                 }
 
-                unit.Planet = unitBody.DestinationPlanet;
+                unit.Planet = postRequestUnitBody.DestinationPlanet;
             }
-            else if (unitBody.DestinationSystem != unit.System)
+            else if (postRequestUnitBody.DestinationSystem != unit.System)
             {
-                unit.EstimatedTimeOfArrival = _clock.Now.AddSeconds(60);
-                await _clock.Delay(60000);
+                unit.EstimatedTimeOfArrival = clock.Now.AddSeconds(60);
+                await clock.Delay(60000);
 
-                unit.System = unitBody.DestinationSystem;
+                unit.System = postRequestUnitBody.DestinationSystem;
 
-                if (unitBody.DestinationPlanet != null)
+                if (postRequestUnitBody.DestinationPlanet != null)
                 {
-                    unit.EstimatedTimeOfArrival = _clock.Now.AddSeconds(15);
-                    await _clock.Delay(15000);
+                    unit.EstimatedTimeOfArrival = clock.Now.AddSeconds(15);
+                    await clock.Delay(15000);
                 }
 
-                unit.Planet = unitBody.DestinationPlanet;
+                unit.Planet = postRequestUnitBody.DestinationPlanet;
             }
             unit.IsMoving = false;
         }

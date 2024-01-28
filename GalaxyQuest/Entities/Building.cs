@@ -1,5 +1,4 @@
-﻿using GalaxyQuest.Controllers;
-using GalaxyQuest.EntitiesDTO;
+﻿using GalaxyQuest.EntitiesDTO;
 using GalaxyQuest.Services;
 using Shard.Shared.Core;
 
@@ -8,12 +7,12 @@ namespace GalaxyQuest.Entities
     /// <summary>
     /// Represents a building in the galaxy.
     /// </summary>
-    public class Building
+    public abstract class Building
     {
         /// <summary>
         /// Gets or sets the unique identifier for the building.
         /// </summary>
-        public string Id { get; set; }
+        public string Id { get; }
 
         /// <summary>
         /// Gets or sets the type of the building.
@@ -58,7 +57,7 @@ namespace GalaxyQuest.Entities
         /// <summary>
         /// Gets or sets the task representing the building process.
         /// </summary>
-        public Task? TaskBuilding { get; set; }
+        public Task TaskBuilding { get; }
 
         /// <summary>
         /// Gets or sets the user repository.
@@ -71,9 +70,28 @@ namespace GalaxyQuest.Entities
         private MapRepository MapRepository { get; set; }
 
         /// <summary>
+        /// Enumeration of building resource category (e.g., "Liquid").
+        /// </summary>
+        public enum BuildingResourceCategory
+        {
+            Liquid,
+            Gaseous,
+            Solid
+        }
+
+        /// <summary>
+        /// Enumeration of building type (e.g., "Mine").
+        /// </summary>
+        public enum BuildingType
+        {
+            Mine,
+            Starport
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Building"/> class.
         /// </summary>
-        public Building(string type, string builderId, string resourceCategory, string system, string planet, IClock _clock, UserRepository userRepository, MapRepository mapRepository)
+        public Building(string type, string builderId, string resourceCategory, string system, string planet, IClock clock, UserRepository userRepository, MapRepository mapRepository)
         {
             // Initialization of properties
             Id = Guid.NewGuid().ToString();
@@ -83,31 +101,31 @@ namespace GalaxyQuest.Entities
             System = system;
             Planet = planet;
             IsBuilt = false;
-            EstimatedBuildTime = _clock.Now.AddMinutes(5);
+            EstimatedBuildTime = clock.Now.AddMinutes(5);
             CancellationTokenSource = new CancellationTokenSource();
             UserRepository = userRepository;
             MapRepository = mapRepository;
-            TaskBuilding = BuiltProcess(_clock, CancellationTokenSource.Token);
+            TaskBuilding = BuiltProcess(clock, CancellationTokenSource.Token);
         }
 
         /// <summary>
         /// Handles the building process asynchronously.
         /// </summary>
-        /// <param name="_clock">The clock interface.</param>
-        /// <param name="_cancellationToken">The cancellation token.</param>
+        /// <param name="clock">The clock interface.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task BuiltProcess(IClock _clock, CancellationToken _cancellationToken)
+        public async Task BuiltProcess(IClock clock, CancellationToken cancellationToken)
         {
             var (unit, userDTO, planetDTO) = GetUnitUserAndPlanet();
 
             try
             {
                 // Delay for 5 minutes or until canceled
-                await _clock.Delay(TimeSpan.FromMinutes(5), _cancellationToken);
+                await clock.Delay(TimeSpan.FromMinutes(5), cancellationToken);
                 this.EstimatedBuildTime = null;
                 this.IsBuilt = true;
                 // Start resource extraction
-                _ = ExtractResources(_clock);
+                BuildingWork(clock);
             }
             catch (OperationCanceledException)
             {
@@ -128,19 +146,19 @@ namespace GalaxyQuest.Entities
         /// <summary>
         /// Virtual method for extracting resources from the built building.
         /// </summary>
-        public virtual async Task ExtractResources(IClock _clock) { }
+        protected abstract void BuildingWork(IClock clock);
 
         /// <summary>
         /// Gets unit, userDTO, and planetDTO based on the builder ID.
         /// </summary>
         /// <returns>A tuple containing the unit, userDTO, and planetDTO.</returns>
-        protected (Unit unit, UserDTO userDTO, PlanetDTO planetDTO) GetUnitUserAndPlanet()
+        protected (Unit unit, UserDto userDTO, PlanetDto planetDTO) GetUnitUserAndPlanet()
         {
             var unit = UserRepository.GetUnits().FirstOrDefault(u => u.Id == BuilderId);
-            var userDTO = UserRepository.Users.FirstOrDefault(u => u.Id == unit.UserId);
-            var planetDTO = (PlanetDTO?)MapRepository.GetOnePlanetWithResources(System, Planet);
+            var userDto = UserRepository.Users.FirstOrDefault(u => u.Id == unit.UserId);
+            var planetDto = (PlanetDto?)MapRepository.GetOnePlanetWithResources(System, Planet);
 
-            return (unit, userDTO, planetDTO);
+            return (unit, userDto, planetDto);
         }
     }
 }

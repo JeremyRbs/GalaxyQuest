@@ -6,7 +6,7 @@ namespace GalaxyQuest.Services
     public class MapRepository
     {
         // List to store star systems with resources
-        public List<StarSystemDTO> Systems;
+        public List<StarSystemDto> Systems;
 
         // Constructor that initializes Systems using a MapFactory
         public MapRepository(MapFactory mapFactory) => Systems = mapFactory.Generate();
@@ -22,7 +22,7 @@ namespace GalaxyQuest.Services
         /// Gets all star systems with resources.
         /// </summary>
         /// <returns>List of star systems with resources.</returns>
-        public List<StarSystemDTO> GetAllSystemsWithResources() => Systems;
+        public List<StarSystemDto> GetAllSystemsWithResources() => Systems;
 
         /// <summary>
         /// Gets a specific star system without resource details.
@@ -55,7 +55,7 @@ namespace GalaxyQuest.Services
         /// <param name="systemName">Name of the star system.</param>
         /// <param name="planetName">Name of the planet.</param>
         /// <returns>The planet with resource details.</returns>
-        public PlanetDTO? GetOnePlanetWithResources(string systemName, string planetName) =>
+        public PlanetDto? GetOnePlanetWithResources(string systemName, string planetName) =>
             GetAllSystemsWithResources().FirstOrDefault(s => s.Name == systemName)?.Planets.FirstOrDefault(p => p.Name == planetName);
 
         /// <summary>

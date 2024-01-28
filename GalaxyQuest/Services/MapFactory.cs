@@ -9,16 +9,16 @@ namespace GalaxyQuest.Services
         /// Generates a list of star systems with planets and resources based on a specified sector specification.
         /// </summary>
         /// <returns>The list of generated star systems.</returns>
-        public List<StarSystemDTO> Generate()
+        public List<StarSystemDto> Generate()
         {
             // Generate a sector specification using the MapGenerator
             SectorSpecification sectorSpecification = new MapGenerator(new MapGeneratorOptions { Seed = "Test application" }).Generate();
 
             // Convert the sector specification into a list of StarSystemDTO
-            List<StarSystemDTO> starSystems = sectorSpecification.Systems.Select(system =>
-                new StarSystemDTO(
+            List<StarSystemDto> starSystems = sectorSpecification.Systems.Select(system =>
+                new StarSystemDto(
                     system.Name,
-                    system.Planets.Select(planet => new PlanetDTO(
+                    system.Planets.Select(planet => new PlanetDto(
                         planet.Name,
                         planet.Size,
                         planet.ResourceQuantity.ToDictionary(
