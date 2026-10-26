@@ -176,7 +176,3 @@ Les contributions sont bienvenues sous forme de pull requests. Les amélioration
 - construction et amélioration de bâtiments,
 - combat ou exploration sur les planètes,
 - sécurisation et validation des requêtes API.
-
----
-
-Ce README a été rédigé à partir de l'analyse du code source présent dans le dépôt et de la structure des projets C# du repository.
