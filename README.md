@@ -1,123 +1,114 @@
 # GalaxyQuest
 
-GalaxyQuest is a small ASP.NET Core REST API that simulates a space exploration and resource-management game. The project generates a procedural galaxy map, exposes star systems and planets through HTTP endpoints, and manages users and units that can move across the galaxy.
+GalaxyQuest is a lightweight ASP.NET Core backend for a space strategy game prototype. It generates a procedural galaxy, exposes star systems and planets through REST endpoints, and manages users and units that can move across the galaxy.
 
-## Objectif du projet
+## Overview
 
-Le but de ce projet est de fournir une API backend simple pour un jeu spatial de type stratégie. Les composants principaux permettent de :
+The project is designed as a backend foundation for a sci-fi resource-management game. It provides in-memory game state, procedural map generation, and a small API surface for interacting with users, star systems, planets, and units.
 
-- générer un univers stellaire aléatoire à partir d'un seed,
-- récupérer les systèmes et les planètes du jeu,
-- créer des utilisateurs avec des unités associées,
-- déplacer des unités entre systèmes et planètes,
-- préparer les fondations pour la construction d'édifices comme les mines.
+The core idea is simple: generate a galaxy, let players exist in it, and expose a clean API to fetch systems, move units, and prepare for future gameplay features such as buildings and resource production.
 
-## Stack technique
+## Features
 
-- Langage : C#
-- Framework : ASP.NET Core 7
-- API : REST JSON
-- Documentation : Swagger / OpenAPI
-- Tests d'intégration : xUnit + Microsoft.AspNetCore.Mvc.Testing
-- Bibliothèque partagée : `Shard.Shared.Core`
+- Procedural galaxy generation using a shared core library
+- Retrieval of star systems and planets
+- User creation and lookup
+- Unit creation and movement between systems and planets
+- Planet resource information exposure
+- Building-related endpoint scaffolding for future expansion
+- Swagger/OpenAPI documentation in development mode
 
-## Structure du dépôt
+## Tech stack
+
+- Language: C#
+- Framework: ASP.NET Core 7
+- API: REST with JSON responses
+- Documentation: Swagger / OpenAPI
+- Testing: xUnit + ASP.NET Core integration test support
+- Shared logic: `Shard.Shared.Core`
+
+## Project structure
 
 ```text
 .
-├── GalaxyQuest/                  # Application ASP.NET Core principale
-│   ├── Controllers/              # Points d'entrée HTTP
-│   ├── Entities/                 # Modèles de domaine
-│   ├── EntitiesDTO/              # DTOs exposés par l'API
-│   ├── Services/                 # Repository et logique de génération/map
-│   ├── Utilities/                # Helpers de réponse
-│   ├── Program.cs                # Bootstrap de l'application
-│   ├── appsettings.json          # Configuration principale
-│   └── GalaxyQuest.csproj        # Projet API
-├── GalaxyQuest.IntegrationTests/ # Tests d'intégration
-├── Shard.Shared.Core/            # Génération de galaxie / logique commune
-├── tests/                        # Fichiers de test / ressources
-├── shard.sln                    # Solution .NET
-├── coverlet.runsettings         # Paramétrage de couverture de tests
-├── extractTestResults.sh         # Script d'extraction des résultats de tests
-├── .gitlab-ci.yml               # Pipeline CI GitLab
-├── README.md                    # Ce document
-└── .gitignore
+├── GalaxyQuest/                  # Main ASP.NET Core application
+│   ├── Controllers/              # HTTP endpoints
+│   ├── Entities/                 # Domain models
+│   ├── EntitiesDTO/              # DTOs returned by the API
+│   ├── Services/                 # Repositories and map generation logic
+│   ├── Utilities/                # Response helpers
+│   ├── Program.cs                # Application bootstrap
+│   ├── appsettings.json          # Main configuration
+│   ├── appsettings.Development.json
+│   └── GalaxyQuest.csproj        # API project file
+├── GalaxyQuest.IntegrationTests/ # Integration tests
+├── Shard.Shared.Core/            # Shared game-generation and time utilities
+├── tests/                       # Sample test files/resources
+├── shard.sln                    # .NET solution file
+├── coverlet.runsettings         # Coverage settings
+├── extractTestResults.sh        # Test result extraction helper
+├── .gitlab-ci.yml               # CI configuration
+├── README.md                    # Project documentation
+├── .dockerignore                # Docker ignore file
+├── .gitignore                   # Git ignore rules
+└── .vscode/                     # Editor configuration
 ```
 
-## Composants clés
+## Architecture
 
-### 1. Application web
-Le cœur du projet est le projet `GalaxyQuest`, un service HTTP ASP.NET Core. Le bootstrap se fait dans `Program.cs` et ajoute :
+### Main application
+The main application lives in the `GalaxyQuest` project. It is an ASP.NET Core web application that registers services and exposes controllers through `Program.cs`.
 
-- le stockage des services `MapFactory`, `MapRepository`, `UserRepository`,
-- les contrôleurs API,
-- Swagger en environnement de développement.
+### Services and repositories
+The project uses a small service layer to centralize in-memory game state:
 
-### 2. Génération de la galaxie
-La logique de génération et de spécification du monde est dans `Shard.Shared.Core`.
+- `MapFactory`: converts generated galaxy data into DTOs
+- `MapRepository`: stores systems and planets and provides lookup methods
+- `UserRepository`: stores players and their units
 
-Les classes importantes incluent :
+### Domain model
+The domain is composed of entities such as:
 
-- `MapGenerator`
-- `MapGeneratorOptions`
-- `SystemSpecification`
-- `PlanetSpecification`
-- `SectorSpecification`
-- `RandomShareComputer`
-
-Cette couche génère les systèmes, les planètes et leurs ressources de manière procédurale.
-
-### 3. Repositories et services
-Les services du projet centralisent l'état applicatif :
-
-- `MapFactory`: transforme les données générées en DTOs exposables,
-- `MapRepository`: stocke la carte, fournit les systèmes et planètes,
-- `UserRepository`: garde en mémoire les utilisateurs et leurs unités.
-
-### 4. Contrôleurs API
-Les endpoints exposés par la configuration actuelle sont les suivants :
-
-#### Systèmes et planètes
-- `GET /Systems`
-- `GET /Systems/{systemName}`
-- `GET /Systems/{systemName}/planets`
-- `GET /Systems/{systemName}/planets/{planetName}`
-
-#### Utilisateurs
-- `PUT /Users/{id}` : création d'un utilisateur
-- `GET /Users/{id}` : récupération d'un utilisateur
-
-#### Unités
-- `GET /users/{userId}/Units`
-- `GET /users/{userId}/Units/{unitId}`
-- `PUT /users/{userId}/Units/{unitId}` : déplacement d'une unité
-- `GET /users/{userId}/Units/{unitId}/location`
-
-#### Bâtiments
-- `POST /users/{userId}/Buildings` : tentative de création d'un bâtiment, notamment un `mine`
-
-## Modèle de domaine
-
-Le projet utilise des entités et DTOs séparés :
-
-- `User` / `UserDTO`
+- `User`
 - `Unit`
-- `Planet` / `PlanetDTO`
-- `StarSystem` / `StarSystemDTO`
+- `Planet`
+- `StarSystem`
 - `Location`
 - `Building`
 
-Les DTOs sont utilisés pour exposer les données de l'API, tandis que les entités internes gardent la logique du jeu.
+DTOs are used to expose public data in a structured way without leaking internal structures.
 
-## Démarrage rapide
+### Shared core generation
+The `Shard.Shared.Core` project contains the procedural generation logic used to produce the galaxy. It includes map specification models, random generation utilities, and time/clock abstractions used by the gameplay logic.
 
-Prérequis :
+## API endpoints
 
-- .NET SDK 7+
-- un terminal compatible
+### Systems and planets
+- `GET /Systems` — retrieves all systems
+- `GET /Systems/{systemName}` — retrieves one system
+- `GET /Systems/{systemName}/planets` — retrieves all planets in a system
+- `GET /Systems/{systemName}/planets/{planetName}` — retrieves one planet
 
-### Installation et lancement
+### Users
+- `PUT /Users/{id}` — creates a user
+- `GET /Users/{id}` — fetches a user
+
+### Units
+- `GET /users/{userId}/Units` — lists the user's units
+- `GET /users/{userId}/Units/{unitId}` — gets one unit
+- `PUT /users/{userId}/Units/{unitId}` — updates a unit movement/action
+- `GET /users/{userId}/Units/{unitId}/location` — fetches the unit's location
+
+### Buildings
+- `POST /users/{userId}/Buildings` — creates a building for a user, notably for a builder unit
+
+## Running the project
+
+### Prerequisites
+
+- .NET SDK 7 or newer
+
+### Restore and run
 
 ```bash
 git clone https://github.com/JeremyRbs/GalaxyQuest.git
@@ -127,52 +118,32 @@ dotnet build
 dotnet run --project GalaxyQuest
 ```
 
-En environnement de développement, Swagger est activé. Vous pouvez généralement l'ouvrir via l'URL affichée dans le terminal, par exemple :
+In development mode, Swagger is enabled and can usually be opened from the terminal output, for example:
 
 ```text
 https://localhost:<port>/swagger
 ```
 
-## Tests
+## Testing
 
-Le dépôt contient un projet de tests d'intégration : `GalaxyQuest.IntegrationTests`.
+The repository includes integration tests in the `GalaxyQuest.IntegrationTests` project.
 
-Pour lancer les tests :
+Run the suite with:
 
 ```bash
 dotnet test
 ```
 
-## Exemple de flux de jeu
+## Current status
 
-Un flux typique ressemble à ceci :
+GalaxyQuest is a game backend prototype rather than a full production game. It focuses on a small gameplay loop based on in-memory state, procedural map generation, and API-driven interaction. The project is a solid foundation for expanding into deeper mechanics such as:
 
-1. création d'un utilisateur via `PUT /Users/{id}` ;
-2. récupération de la liste des systèmes via `GET /Systems` ;
-3. sélection d'un système et d'une planète ;
-4. déplacement d'une unité via `PUT /users/{userId}/Units/{unitId}` ;
-5. consultation de la localisation et des ressources de la planète ;
-6. éventuellement construction d'un bâtiment.
+- real resource production and consumption,
+- building construction and upgrades,
+- combat or exploration systems,
+- persistence and database integration,
+- more robust validation and security.
 
-## Points d'attention
+## Notes
 
-Le projet est encore une base fonctionnelle de démonstration plutôt qu'un jeu complet. Le code contient notamment :
-
-- des structures en mémoire pour les repositories,
-- des mécanismes de déplacement d'unités avec temps estimé d'arrivée,
-- une logique de génération de map et de ressources partagée,
-- des endpoints utiles pour un prototype/serveur backend.
-
-## Licence et statut
-
-Le projet est un prototype technique d'API de jeu spatial. Il est conçu comme une base de travail pour un backend de jeu ou un service de gestion de galaxie.
-
-## Contributions
-
-Les contributions sont bienvenues sous forme de pull requests. Les améliorations naturelles du projet pourraient inclure :
-
-- persistance des utilisateurs et des systèmes,
-- gestion réelle des ressources et de la production,
-- construction et amélioration de bâtiments,
-- combat ou exploration sur les planètes,
-- sécurisation et validation des requêtes API.
+The project is intentionally lightweight and easy to explore. It is especially useful as a learning project or a starting point for a multi-entity sci-fi strategy backend.
